@@ -145,16 +145,12 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        {(['Visibles', visibleCount], ['Total', PLACES.length]).length > 0 && (
-          <>
-            <div style={{ fontFamily:"'Cinzel',serif", fontSize:'.65rem', letterSpacing:'.1em', color:'#7a5a2a', whiteSpace:'nowrap', padding:'4px 10px', border:'1px solid #3d2b0f', borderRadius:2 }}>
-              Visibles: <span style={{ color:'#c9a227' }}>{visibleCount}</span>
-            </div>
-            <div style={{ fontFamily:"'Cinzel',serif", fontSize:'.65rem', letterSpacing:'.1em', color:'#7a5a2a', whiteSpace:'nowrap', padding:'4px 10px', border:'1px solid #3d2b0f', borderRadius:2 }}>
-              Total: <span style={{ color:'#c9a227' }}>{PLACES.length}</span> lugares
-            </div>
-          </>
-        )}
+        <div style={{ fontFamily:"'Cinzel',serif", fontSize:'.65rem', letterSpacing:'.1em', color:'#7a5a2a', whiteSpace:'nowrap', padding:'4px 10px', border:'1px solid #3d2b0f', borderRadius:2 }}>
+          Visibles: <span style={{ color:'#c9a227' }}>{visibleCount}</span>
+        </div>
+        <div style={{ fontFamily:"'Cinzel',serif", fontSize:'.65rem', letterSpacing:'.1em', color:'#7a5a2a', whiteSpace:'nowrap', padding:'4px 10px', border:'1px solid #3d2b0f', borderRadius:2 }}>
+          Total: <span style={{ color:'#c9a227' }}>{PLACES.length}</span> lugares
+        </div>
 
         {/* Rivers toggle */}
         <button
