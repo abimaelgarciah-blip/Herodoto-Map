@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PLACES, BOOKS, type Place } from "@/data/places";
+import { RIVERS } from "@/data/rivers";
 
 interface HerodotusMapProps {
   activeBooks: Set<number>;
   flyToPlace: Place | null;
+  showRivers: boolean;
   onVisibleCount: (n: number) => void;
 }
 
@@ -14,7 +16,6 @@ function buildPopup(place: Place): string {
     const bk = BOOKS[b];
     return `<span class="popup-book-tag" style="background:${bk.color}33;color:${bk.color};border:1px solid ${bk.color}66">${bk.short}</span>`;
   }).join('');
-
   return `
     <div class="popup-header">
       <div class="popup-books">${tags}</div>
@@ -28,10 +29,11 @@ function buildPopup(place: Place): string {
   `;
 }
 
-export default function HerodotusMap({ activeBooks, flyToPlace, onVisibleCount }: HerodotusMapProps) {
-  const mapRef   = useRef<HTMLDivElement>(null);
-  const mapObj   = useRef<any>(null);
-  const markers  = useRef<Map<string, any>>(new Map());
+export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, onVisibleCount }: HerodotusMapProps) {
+  const mapRef    = useRef<HTMLDivElement>(null);
+  const mapObj    = useRef<any>(null);
+  const markers   = useRef<Map<string, any>>(new Map());
+  const riverLayers = useRef<any[]>([]);
   const [ready, setReady] = useState(false);
 
   // Init map once
@@ -49,10 +51,16 @@ export default function HerodotusMap({ activeBooks, flyToPlace, onVisibleCount }
 
       L.control.zoom({ position: "topright" }).addTo(map);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
+      // CartoDB Dark Matter — dark tiles, no API key needed
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: "abcd",
+          maxZoom: 19,
+        }
+      ).addTo(map);
 
       mapObj.current = map;
       setReady(true);
@@ -63,28 +71,24 @@ export default function HerodotusMap({ activeBooks, flyToPlace, onVisibleCount }
         mapObj.current.remove();
         mapObj.current = null;
         markers.current.clear();
+        riverLayers.current = [];
       }
     };
   }, []);
 
-  // Sync markers when activeBooks changes
+  // Sync place markers when activeBooks changes
   useEffect(() => {
     if (!ready || !mapObj.current) return;
 
     import("leaflet").then(L => {
-      // Remove all markers
       markers.current.forEach(m => m.remove());
       markers.current.clear();
 
       let count = 0;
-
       PLACES.forEach(place => {
-        const visible = place.books.some(b => activeBooks.has(b));
-        if (!visible) return;
-
+        if (!place.books.some(b => activeBooks.has(b))) return;
         count++;
-        const dominantBook = place.books[0];
-        const color = BOOKS[dominantBook].color;
+        const color = BOOKS[place.books[0]].color;
 
         const marker = L.circleMarker([place.lat, place.lng], {
           radius: 7,
@@ -105,13 +109,36 @@ export default function HerodotusMap({ activeBooks, flyToPlace, onVisibleCount }
     });
   }, [ready, activeBooks, onVisibleCount]);
 
+  // Sync river polylines
+  useEffect(() => {
+    if (!ready || !mapObj.current) return;
+
+    import("leaflet").then(L => {
+      riverLayers.current.forEach(l => l.remove());
+      riverLayers.current = [];
+
+      if (!showRivers) return;
+
+      RIVERS.forEach(river => {
+        const line = L.polyline(river.coords as [number, number][], {
+          color: "#74c6f0",
+          weight: 2,
+          opacity: 0.65,
+          smoothFactor: 1,
+        });
+        line.bindTooltip(`${river.name} · ${river.ancient}`, { sticky: true });
+        line.addTo(mapObj.current);
+        riverLayers.current.push(line);
+      });
+    });
+  }, [ready, showRivers]);
+
   // Fly to selected place
   useEffect(() => {
     if (!flyToPlace || !mapObj.current) return;
     mapObj.current.flyTo([flyToPlace.lat, flyToPlace.lng], 8, { duration: 1.2 });
     setTimeout(() => {
-      const m = markers.current.get(flyToPlace.name);
-      if (m) m.openPopup();
+      markers.current.get(flyToPlace.name)?.openPopup();
     }, 1300);
   }, [flyToPlace]);
 
@@ -120,12 +147,9 @@ export default function HerodotusMap({ activeBooks, flyToPlace, onVisibleCount }
       <div ref={mapRef} id="map" />
       {!ready && (
         <div className="absolute inset-0 flex items-center justify-center" style={{ background: '#0a0804' }}>
-          <div className="text-center">
-            <div className="text-5xl mb-3">🗺️</div>
-            <p style={{ fontFamily: "'Cinzel', serif", color: '#c9a227', letterSpacing: '0.1em', fontSize: '0.9rem' }}>
-              CARGANDO EL MAPA DEL MUNDO ANTIGUO
-            </p>
-          </div>
+          <p style={{ fontFamily: "'Cinzel', serif", color: '#c9a227', letterSpacing: '0.1em', fontSize: '0.9rem' }}>
+            CARGANDO EL MAPA DEL MUNDO ANTIGUO…
+          </p>
         </div>
       )}
     </div>

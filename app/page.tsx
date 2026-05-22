@@ -16,14 +16,13 @@ const HerodotusMap = dynamic(() => import("@/components/HerodotusMap"), {
   ),
 });
 
-const ALL_BOOKS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-
 export default function Home() {
-  const [activeBooks, setActiveBooks] = useState<Set<number>>(new Set(ALL_BOOKS));
-  const [flyToPlace, setFlyToPlace]   = useState<Place | null>(null);
+  const [activeBooks, setActiveBooks]   = useState<Set<number>>(new Set([1,2,3,4,5,6,7,8,9]));
+  const [flyToPlace, setFlyToPlace]     = useState<Place | null>(null);
   const [visibleCount, setVisibleCount] = useState(PLACES.length);
-  const [search, setSearch]           = useState("");
-  const [searchOpen, setSearchOpen]   = useState(false);
+  const [search, setSearch]             = useState("");
+  const [searchOpen, setSearchOpen]     = useState(false);
+  const [showRivers, setShowRivers]     = useState(true);
 
   const handleToggleBook = useCallback((id: number) => {
     setActiveBooks(prev => {
@@ -35,7 +34,6 @@ export default function Home() {
 
   const handleVisibleCount = useCallback((n: number) => setVisibleCount(n), []);
 
-  // Search
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     const q = search.toLowerCase();
@@ -48,6 +46,29 @@ export default function Home() {
     setFlyToPlace(place);
     setSearch("");
     setSearchOpen(false);
+  };
+
+  const btnBase: React.CSSProperties = {
+    fontFamily: "'Cinzel', serif",
+    fontSize: '.62rem',
+    letterSpacing: '.1em',
+    padding: '4px 10px',
+    borderRadius: 2,
+    cursor: 'pointer',
+    transition: 'all .2s',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+    border: '1px solid rgba(74,198,240,.3)',
+    background: 'rgba(74,198,240,.08)',
+    color: '#74c6f0',
+  };
+
+  const btnOff: React.CSSProperties = {
+    ...btnBase,
+    opacity: .35,
+    color: '#5a3e1b',
+    borderColor: '#3d2b0f',
+    background: 'transparent',
   };
 
   return (
@@ -66,15 +87,11 @@ export default function Home() {
         position: 'relative',
         flexWrap: 'wrap',
       }}>
-        {/* Gold underline */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
-          background: 'linear-gradient(90deg, transparent, #c9a227 20%, #e8d5a3 50%, #c9a227 80%, transparent)',
-        }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
+          background: 'linear-gradient(90deg,transparent,#c9a227 20%,#e8d5a3 50%,#c9a227 80%,transparent)' }} />
 
-        {/* Title */}
         <div>
-          <h1 style={{ fontFamily: "'Cinzel', serif", fontSize: '1.05rem', fontWeight: 900, color: '#e8d5a3', letterSpacing: '.15em', whiteSpace: 'nowrap' }}>
+          <h1 style={{ fontFamily: "'Cinzel',serif", fontSize: '1.05rem', fontWeight: 900, color: '#e8d5a3', letterSpacing: '.15em', whiteSpace: 'nowrap' }}>
             Ἱστορίαι — Las Historias de Heródoto
           </h1>
           <div style={{ fontSize: '.75rem', color: '#7a5a2a', fontStyle: 'italic', whiteSpace: 'nowrap' }}>
@@ -97,7 +114,7 @@ export default function Home() {
               background: 'rgba(255,255,255,.04)',
               border: '1px solid #3d2b0f',
               color: '#e8d5a3',
-              fontFamily: "'Crimson Text', serif",
+              fontFamily: "'Crimson Text',serif",
               fontSize: '.82rem',
               padding: '5px 10px 5px 28px',
               borderRadius: 2,
@@ -111,19 +128,13 @@ export default function Home() {
               maxHeight: 220, overflowY: 'auto',
             }}>
               {searchResults.map(p => (
-                <div
-                  key={p.name}
-                  onClick={() => handleSelectResult(p)}
-                  style={{
-                    padding: '6px 10px', fontSize: '.8rem', cursor: 'pointer',
-                    borderBottom: '1px solid #1e150a', display: 'flex', gap: 8, alignItems: 'center',
-                  }}
+                <div key={p.name} onClick={() => handleSelectResult(p)}
+                  style={{ padding: '6px 10px', fontSize: '.8rem', cursor: 'pointer',
+                    borderBottom: '1px solid #1e150a', display: 'flex', gap: 8, alignItems: 'center' }}
                   onMouseEnter={e => (e.currentTarget.style.background = '#1e150a')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <span style={{
-                    fontFamily: "'Cinzel', serif", fontSize: '.6rem', letterSpacing: '.1em', opacity: .6, flexShrink: 0,
-                  }}>
+                  <span style={{ fontFamily: "'Cinzel',serif", fontSize: '.6rem', letterSpacing: '.1em', opacity: .6, flexShrink: 0 }}>
                     {p.books[0]}
                   </span>
                   {p.name}
@@ -134,23 +145,27 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        <div style={{
-          fontFamily: "'Cinzel', serif", fontSize: '.65rem', letterSpacing: '.1em',
-          color: '#7a5a2a', whiteSpace: 'nowrap', padding: '4px 10px',
-          border: '1px solid #3d2b0f', borderRadius: 2,
-        }}>
-          Visibles: <span style={{ color: '#c9a227' }}>{visibleCount}</span>
-        </div>
-        <div style={{
-          fontFamily: "'Cinzel', serif", fontSize: '.65rem', letterSpacing: '.1em',
-          color: '#7a5a2a', whiteSpace: 'nowrap', padding: '4px 10px',
-          border: '1px solid #3d2b0f', borderRadius: 2,
-        }}>
-          Total: <span style={{ color: '#c9a227' }}>{PLACES.length}</span> lugares
-        </div>
+        {(['Visibles', visibleCount], ['Total', PLACES.length]).length > 0 && (
+          <>
+            <div style={{ fontFamily:"'Cinzel',serif", fontSize:'.65rem', letterSpacing:'.1em', color:'#7a5a2a', whiteSpace:'nowrap', padding:'4px 10px', border:'1px solid #3d2b0f', borderRadius:2 }}>
+              Visibles: <span style={{ color:'#c9a227' }}>{visibleCount}</span>
+            </div>
+            <div style={{ fontFamily:"'Cinzel',serif", fontSize:'.65rem', letterSpacing:'.1em', color:'#7a5a2a', whiteSpace:'nowrap', padding:'4px 10px', border:'1px solid #3d2b0f', borderRadius:2 }}>
+              Total: <span style={{ color:'#c9a227' }}>{PLACES.length}</span> lugares
+            </div>
+          </>
+        )}
+
+        {/* Rivers toggle */}
+        <button
+          onClick={() => setShowRivers(v => !v)}
+          style={showRivers ? btnBase : btnOff}
+        >
+          🌊 Ríos
+        </button>
       </header>
 
-      {/* ── CONTENT (sidebar + map) ── */}
+      {/* ── CONTENT ── */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}
            onClick={() => setSearchOpen(false)}>
         <Sidebar activeBooks={activeBooks} onToggleBook={handleToggleBook} />
@@ -158,18 +173,18 @@ export default function Home() {
         <HerodotusMap
           activeBooks={activeBooks}
           flyToPlace={flyToPlace}
+          showRivers={showRivers}
           onVisibleCount={handleVisibleCount}
         />
 
-        {/* Bottom bar */}
         <div style={{
           position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
           zIndex: 800, background: 'rgba(14,10,4,.9)', border: '1px solid #3d2b0f',
           borderTop: '2px solid #c9a227', padding: '6px 20px',
-          fontFamily: "'Cinzel', serif", fontSize: '.65rem', letterSpacing: '.12em',
+          fontFamily: "'Cinzel',serif", fontSize: '.65rem', letterSpacing: '.12em',
           color: '#7a5a2a', pointerEvents: 'none', whiteSpace: 'nowrap',
         }}>
-          📍 Mostrando <span style={{ color: '#e8d5a3' }}>{visibleCount}</span> lugares · Haz clic en un marcador para más información
+          📍 Mostrando <span style={{ color:'#e8d5a3' }}>{visibleCount}</span> lugares · Haz clic en un marcador para más información
         </div>
       </div>
     </div>
