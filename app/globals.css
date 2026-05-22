@@ -15,9 +15,14 @@ body {
 /* ── Map ── */
 #map { width: 100%; height: 100%; background: #1a2a3a; }
 
-/* OSM tiles filtered to dark/ancient look: visible geography, warm tones */
+/* Fix: Tailwind resets max-width:100% on img, which breaks Leaflet tile positioning */
+.leaflet-container img {
+  max-width: none !important;
+}
+
+/* ESRI Physical Map filtered for an ancient parchment look */
 .leaflet-tile-pane {
-  filter: brightness(0.5) saturate(0.5) sepia(0.4);
+  filter: brightness(0.62) saturate(0.55) sepia(0.5);
 }
 
 /* ── Popups ── */

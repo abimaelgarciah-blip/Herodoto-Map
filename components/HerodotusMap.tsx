@@ -51,13 +51,13 @@ export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, onVi
 
       L.control.zoom({ position: "topright" }).addTo(map);
 
-      // OpenStreetMap — reliable, filtered to dark/ancient look via CSS
+      // ESRI World Physical Map — enterprise CDN (very reliable), warm terrain
+      // colors that look like ancient parchment when sepia-filtered
       L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 19,
+          attribution: "Tiles &copy; Esri &mdash; Source: US National Park Service",
+          maxZoom: 8,
         }
       ).addTo(map);
 
