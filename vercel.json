@@ -1,0 +1,7 @@
+{
+  "projectId": "project-6jot6",
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install"
+}

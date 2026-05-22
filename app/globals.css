@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leaflet CSS overrides for ancient style */
+.leaflet-container {
+  background-color: #c8b89a;
+  font-family: Georgia, serif;
+}
+
+.leaflet-tile-pane {
+  filter: sepia(30%) saturate(80%) brightness(90%);
+}
+
+.leaflet-popup-content-wrapper {
+  background: #fdf8ef;
+  border: 2px solid #c26d19;
+  border-radius: 4px;
+  box-shadow: 4px 4px 10px rgba(44, 24, 16, 0.4);
+}
+
+.leaflet-popup-tip {
+  background: #c26d19;
+}
+
+.leaflet-popup-content {
+  margin: 12px 16px;
+  font-family: Georgia, serif;
+  color: #2c1810;
+}
+
+.ancient-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #2c1810;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 2px 2px 6px rgba(44, 24, 16, 0.5);
+}
+
+.ancient-marker:hover {
+  transform: scale(1.2);
+  box-shadow: 3px 3px 10px rgba(44, 24, 16, 0.7);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f3d99e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c26d19;
+  border-radius: 3px;
+}
+
+/* Parchment texture effect */
+.parchment-bg {
+  background-color: #fdf8ef;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeBlend in='SourceGraphic' mode='multiply'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+.border-ancient {
+  border-color: #c26d19;
+}
+
+/* Animation for selected place */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(194, 109, 25, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(194, 109, 25, 0.9); }
+}
+
+.selected-marker {
+  animation: glow-pulse 2s infinite;
+}
+
+/* Book tabs */
+.book-tab {
+  writing-mode: horizontal-tb;
+  transition: all 0.2s;
+}
+
+.book-tab.active {
+  background-color: #c26d19;
+  color: #fdf8ef;
+}
