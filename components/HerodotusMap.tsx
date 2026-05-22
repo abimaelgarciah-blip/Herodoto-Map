@@ -1,189 +1,130 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PLACES, TIPO_COLORES, TIPO_ICONOS, type Place } from "@/data/places";
+import { PLACES, BOOKS, type Place } from "@/data/places";
 
 interface HerodotusMapProps {
-  selectedPlace: Place | null;
-  onSelectPlace: (place: Place) => void;
-  filterTipo: string;
-  filterLibro: string;
+  activeBooks: Set<number>;
+  flyToPlace: Place | null;
+  onVisibleCount: (n: number) => void;
 }
 
-export default function HerodotusMap({
-  selectedPlace,
-  onSelectPlace,
-  filterTipo,
-  filterLibro,
-}: HerodotusMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<Map<string, any>>(new Map());
-  const [mapReady, setMapReady] = useState(false);
+function buildPopup(place: Place): string {
+  const tags = place.books.map(b => {
+    const bk = BOOKS[b];
+    return `<span class="popup-book-tag" style="background:${bk.color}33;color:${bk.color};border:1px solid ${bk.color}66">${bk.short}</span>`;
+  }).join('');
 
-  const filteredPlaces = PLACES.filter((p) => {
-    if (filterTipo !== "todos" && p.tipo !== filterTipo) return false;
-    if (filterLibro !== "todos" && p.libro !== filterLibro) return false;
-    return true;
-  });
+  return `
+    <div class="popup-header">
+      <div class="popup-books">${tags}</div>
+      <div class="popup-name">${place.name}</div>
+      <div class="popup-modern">${place.modern}</div>
+    </div>
+    <div class="popup-body">
+      <div class="popup-text">${place.text}</div>
+      ${place.quote ? `<div class="popup-quote">${place.quote}</div>` : ''}
+    </div>
+  `;
+}
 
+export default function HerodotusMap({ activeBooks, flyToPlace, onVisibleCount }: HerodotusMapProps) {
+  const mapRef   = useRef<HTMLDivElement>(null);
+  const mapObj   = useRef<any>(null);
+  const markers  = useRef<Map<string, any>>(new Map());
+  const [ready, setReady] = useState(false);
+
+  // Init map once
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
+    if (!mapRef.current || mapObj.current) return;
 
-    // Dynamic import to avoid SSR issues with Leaflet
-    import("leaflet").then((L) => {
-      // Fix default marker icons
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-
+    import("leaflet").then(L => {
       const map = L.map(mapRef.current!, {
-        center: [35.0, 30.0],
-        zoom: 4,
+        center: [36.5, 26.5],
+        zoom: 5,
         minZoom: 2,
-        maxZoom: 10,
+        maxZoom: 12,
         zoomControl: false,
       });
 
-      // Add zoom control in top-right
       L.control.zoom({ position: "topright" }).addTo(map);
 
-      // Tile layer with ancient feel
-      L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19,
-        }
-      ).addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map);
 
-      mapInstanceRef.current = map;
-      setMapReady(true);
+      mapObj.current = map;
+      setReady(true);
     });
 
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-        markersRef.current.clear();
+      if (mapObj.current) {
+        mapObj.current.remove();
+        mapObj.current = null;
+        markers.current.clear();
       }
     };
   }, []);
 
-  // Add/remove markers when filter changes
+  // Sync markers when activeBooks changes
   useEffect(() => {
-    if (!mapReady || !mapInstanceRef.current) return;
+    if (!ready || !mapObj.current) return;
 
-    import("leaflet").then((L) => {
-      const map = mapInstanceRef.current;
+    import("leaflet").then(L => {
+      // Remove all markers
+      markers.current.forEach(m => m.remove());
+      markers.current.clear();
 
-      // Remove all current markers
-      markersRef.current.forEach((marker) => marker.remove());
-      markersRef.current.clear();
+      let count = 0;
 
-      // Add filtered markers
-      filteredPlaces.forEach((place) => {
-        const color = TIPO_COLORES[place.tipo];
-        const icon = TIPO_ICONOS[place.tipo];
-        const size = place.importancia === 3 ? 36 : place.importancia === 2 ? 28 : 22;
+      PLACES.forEach(place => {
+        const visible = place.books.some(b => activeBooks.has(b));
+        if (!visible) return;
 
-        const divIcon = L.divIcon({
-          className: "",
-          html: `<div class="ancient-marker" style="
-            width: ${size}px;
-            height: ${size}px;
-            background-color: ${color};
-            opacity: 0.9;
-            font-size: ${size * 0.5}px;
-          ">${icon}</div>`,
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2],
-          popupAnchor: [0, -size / 2],
+        count++;
+        const dominantBook = place.books[0];
+        const color = BOOKS[dominantBook].color;
+
+        const marker = L.circleMarker([place.lat, place.lng], {
+          radius: 7,
+          fillColor: color,
+          color: "#0a0804",
+          weight: 1.5,
+          opacity: 1,
+          fillOpacity: 0.9,
         });
 
-        const marker = L.marker([place.lat, place.lng], { icon: divIcon });
-
-        marker.bindPopup(`
-          <div style="max-width: 240px;">
-            <div style="font-size: 11px; color: #8b6650; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em;">
-              ${icon} ${place.tipo} · Libro ${place.libro}
-            </div>
-            <h3 style="font-size: 15px; font-weight: bold; color: #2c1810; margin: 0 0 4px 0;">
-              ${place.nombre}
-            </h3>
-            <div style="font-size: 12px; color: #8b6650; font-style: italic; margin-bottom: 6px;">
-              ${place.nombreAntiguo}
-            </div>
-            <p style="font-size: 12px; color: #5c3d2e; margin: 0; line-height: 1.5;">
-              ${place.descripcion.slice(0, 120)}...
-            </p>
-            <button
-              onclick="window.dispatchEvent(new CustomEvent('selectPlace', {detail: '${place.id}'}))"
-              style="
-                margin-top: 8px;
-                padding: 4px 10px;
-                background: #c26d19;
-                color: #fdf8ef;
-                border: none;
-                border-radius: 3px;
-                font-size: 11px;
-                cursor: pointer;
-                font-family: Georgia, serif;
-              "
-            >
-              Ver más →
-            </button>
-          </div>
-        `);
-
-        marker.on("click", () => onSelectPlace(place));
-        marker.addTo(map);
-        markersRef.current.set(place.id, marker);
+        marker.bindPopup(buildPopup(place), { maxWidth: 320 });
+        marker.bindTooltip(place.name);
+        marker.addTo(mapObj.current);
+        markers.current.set(place.name, marker);
       });
+
+      onVisibleCount(count);
     });
-  }, [mapReady, filteredPlaces, onSelectPlace]);
+  }, [ready, activeBooks, onVisibleCount]);
 
   // Fly to selected place
   useEffect(() => {
-    if (!selectedPlace || !mapInstanceRef.current) return;
-
-    mapInstanceRef.current.flyTo(
-      [selectedPlace.lat, selectedPlace.lng],
-      6,
-      { duration: 1.5 }
-    );
-
-    const marker = markersRef.current.get(selectedPlace.id);
-    if (marker) {
-      setTimeout(() => marker.openPopup(), 1600);
-    }
-  }, [selectedPlace]);
-
-  // Listen for popup button clicks
-  useEffect(() => {
-    const handler = (e: CustomEvent) => {
-      const place = PLACES.find((p) => p.id === e.detail);
-      if (place) onSelectPlace(place);
-    };
-    window.addEventListener("selectPlace", handler as EventListener);
-    return () => window.removeEventListener("selectPlace", handler as EventListener);
-  }, [onSelectPlace]);
+    if (!flyToPlace || !mapObj.current) return;
+    mapObj.current.flyTo([flyToPlace.lat, flyToPlace.lng], 8, { duration: 1.2 });
+    setTimeout(() => {
+      const m = markers.current.get(flyToPlace.name);
+      if (m) m.openPopup();
+    }, 1300);
+  }, [flyToPlace]);
 
   return (
-    <div className="relative w-full h-full">
-      <div ref={mapRef} className="w-full h-full" />
-      {!mapReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-parchment-100">
+    <div className="w-full h-full relative">
+      <div ref={mapRef} id="map" />
+      {!ready && (
+        <div className="absolute inset-0 flex items-center justify-center" style={{ background: '#0a0804' }}>
           <div className="text-center">
-            <div className="text-4xl mb-3">🗺️</div>
-            <p className="text-ancient-medium font-serif">Desplegando el mapa del mundo antiguo...</p>
+            <div className="text-5xl mb-3">🗺️</div>
+            <p style={{ fontFamily: "'Cinzel', serif", color: '#c9a227', letterSpacing: '0.1em', fontSize: '0.9rem' }}>
+              CARGANDO EL MAPA DEL MUNDO ANTIGUO
+            </p>
           </div>
         </div>
       )}

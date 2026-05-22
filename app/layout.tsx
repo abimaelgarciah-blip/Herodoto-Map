@@ -2,17 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Mapa de Heródoto",
-  description:
-    "Mapa interactivo del mundo antiguo según las Historias de Heródoto de Halicarnaso (484-425 a.C.)",
-  keywords: ["Heródoto", "historia antigua", "Grecia", "Persia", "mapa histórico"],
+  title: "Ἱστορίαι — Las Historias de Heródoto",
+  description: "Mapa interactivo de todos los lugares mencionados en las Historias de Heródoto de Halicarnaso · Siglo V a.C.",
+  keywords: ["Heródoto", "Historias", "mapa histórico", "Grecia antigua", "Persia"],
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
       <head>
@@ -23,9 +18,7 @@ export default function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body className="bg-parchment-100 text-ancient-dark font-serif">
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

@@ -1,420 +1,216 @@
-export type BookCategory =
-  | "Clio"
-  | "Euterpe"
-  | "Thalia"
-  | "Melpomene"
-  | "Terpsichore"
-  | "Erato"
-  | "Polymnia"
-  | "Urania"
-  | "Calliope";
-
-export type PlaceType =
-  | "ciudad"
-  | "region"
-  | "batalla"
-  | "maravilla"
-  | "rio"
-  | "mar"
-  | "montaña";
-
 export interface Place {
-  id: string;
-  nombre: string;
-  nombreAntiguo: string;
   lat: number;
   lng: number;
-  tipo: PlaceType;
-  libro: BookCategory;
-  descripcion: string;
-  cita?: string;
-  importancia: 1 | 2 | 3; // 3 = máxima
+  name: string;
+  modern: string;
+  books: number[];
+  region: string;
+  text: string;
+  quote?: string;
 }
 
+export const BOOKS: Record<number, { label: string; color: string; short: string }> = {
+  1: { label: 'Libro I · Clío',       color: '#e07b39', short: 'I'    },
+  2: { label: 'Libro II · Euterpe',   color: '#27ae60', short: 'II'   },
+  3: { label: 'Libro III · Talía',    color: '#8e44ad', short: 'III'  },
+  4: { label: 'Libro IV · Melpómene', color: '#2980b9', short: 'IV'   },
+  5: { label: 'Libro V · Terpsícore', color: '#16a085', short: 'V'    },
+  6: { label: 'Libro VI · Erato',     color: '#d35400', short: 'VI'   },
+  7: { label: 'Libro VII · Polimnia', color: '#c0392b', short: 'VII'  },
+  8: { label: 'Libro VIII · Urania',  color: '#e74c3c', short: 'VIII' },
+  9: { label: 'Libro IX · Calíope',   color: '#f39c12', short: 'IX'   },
+};
+
 export const PLACES: Place[] = [
-  // LIBRO I - CLIO
-  {
-    id: "halicarnaso",
-    nombre: "Halicarnaso",
-    nombreAntiguo: "Ἁλικαρνασσός",
-    lat: 37.038,
-    lng: 27.424,
-    tipo: "ciudad",
-    libro: "Clio",
-    descripcion:
-      "Ciudad natal de Heródoto en la costa de Caria (actual Bodrum, Turquía). Desde aquí partió su legado de la historiografía occidental.",
-    cita:
-      "Heródoto de Halicarnaso expone aquí sus investigaciones para que los hechos humanos no se borren con el tiempo.",
-    importancia: 3,
-  },
-  {
-    id: "sardes",
-    nombre: "Sardes",
-    nombreAntiguo: "Σάρδεις",
-    lat: 38.488,
-    lng: 28.035,
-    tipo: "ciudad",
-    libro: "Clio",
-    descripcion:
-      "Capital del reino de Lidia y residencia de Creso, el rey más rico del mundo antiguo. Ciro el Grande la conquistó en 547 a.C.",
-    cita:
-      "Creso, hijo de Aliates, rey de los lidios... fue el primer bárbaro que sometió a tributo a los griegos.",
-    importancia: 3,
-  },
-  {
-    id: "babilonia",
-    nombre: "Babilonia",
-    nombreAntiguo: "Βαβυλών",
-    lat: 32.536,
-    lng: 44.421,
-    tipo: "ciudad",
-    libro: "Clio",
-    descripcion:
-      "La gran metrópolis del mundo antiguo, con sus murallas y jardines colgantes. Heródoto la describe con admiración y asombro.",
-    cita:
-      "Babilonia supera en esplendor a cualquier ciudad que yo conozca... sus murallas tienen 200 codos de altura.",
-    importancia: 3,
-  },
-  {
-    id: "persepolis",
-    nombre: "Persépolis",
-    nombreAntiguo: "Περσέπολις",
-    lat: 29.935,
-    lng: 52.891,
-    tipo: "ciudad",
-    libro: "Clio",
-    descripcion:
-      "Capital ceremonial del Imperio Persa, sede de los reyes aqueménidas. Centro del poder que enfrentó a Grecia.",
-    importancia: 3,
-    libro: "Clio",
-  },
-  {
-    id: "ecbatana",
-    nombre: "Ecbatana",
-    nombreAntiguo: "Ἀγβάτανα",
-    lat: 34.799,
-    lng: 48.515,
-    tipo: "ciudad",
-    libro: "Clio",
-    descripcion:
-      "Capital de Media y residencia de verano de los reyes persas, con sus siete murallas concéntricas de diferentes colores.",
-    importancia: 2,
-    libro: "Clio",
-  },
+  // ── GRECIA CONTINENTAL ────────────────────────────────
+  { lat: 37.9715, lng: 23.7257, name: 'Atenas', modern: 'Atenas, Grecia', books: [1,5,6,7,8,9], region: 'Grecia',
+    text: 'Centro de la resistencia griega contra Persia. Los atenienses evacuaron la ciudad antes que rendirla a Jerjes en 480 a.C. Temístocles engañó a Jerjes para forzar la batalla de Salamina en el estrecho.',
+    quote: '"Los atenienses se convirtieron en el mayor pueblo de Grecia cuando más la necesitaban." — VII.139' },
+  { lat: 37.0819, lng: 22.4265, name: 'Esparta (Lacedemonia)', modern: 'Esparta, Grecia', books: [1,5,6,7,8,9], region: 'Grecia',
+    text: 'Ciudad guerrera del Peloponeso. Leonidas lideró los 300 espartanos en las Termópilas. En Platea el general Pausanias logró la victoria terrestre definitiva contra Mardonio.',
+    quote: '"Forastero, ve a decir a los espartanos que aquí yacemos, obedeciendo sus leyes." — VII.228' },
+  { lat: 37.9360, lng: 22.9280, name: 'Corinto', modern: 'Corinto, Grecia', books: [1,3,5,7,8,9], region: 'Grecia',
+    text: 'Importante ciudad comercial y aliada en las guerras. Heródoto narra el episodio del tirano Periandro y su hijo Lycofrón. Los corintios participaron en Salamina y Platea.' },
+  { lat: 38.3666, lng: 23.3278, name: 'Tebas (Beocia)', modern: 'Tebas, Grecia', books: [5,7,8,9], region: 'Grecia',
+    text: 'Ciudad beocia que tomó partido por los persas (medismo). Fue sede del cuartel general persa de Mardonio antes de Platea. Heródoto la critica duramente por su colaboracionismo.',
+    quote: '"Los tebanos combatieron brillantemente del lado de los bárbaros." — IX.67' },
+  { lat: 38.4826, lng: 22.5014, name: 'Delfos', modern: 'Delfos, Grecia', books: [1,2,3,4,5,6,7,8,9], region: 'Grecia',
+    text: 'El oráculo más importante del mundo griego. Todos los reyes lo consultaron: Creso, Darío, Jerjes. La Pitia predijo el "muro de madera" que Temístocles interpretó como la flota ateniense.',
+    quote: '"Oh tú, Creso, que gobernabas el gran reino de Lidia, si cruzas el Halis destruirás un gran imperio." — I.53' },
+  { lat: 38.1533, lng: 23.9620, name: 'Maratón', modern: 'Marathonas, Grecia', books: [6], region: 'Grecia',
+    text: '490 a.C. Los atenienses derrotaron solos al ejército persa. El corredor Filípides había viajado a Esparta para pedir ayuda. La victoria fue el símbolo de la resistencia griega.',
+    quote: '"Los atenienses fueron los primeros griegos que cargaron contra los persas al trote." — VI.112' },
+  { lat: 38.8000, lng: 22.5333, name: 'Termópilas', modern: 'Termópilas, Grecia', books: [7], region: 'Grecia',
+    text: '480 a.C. Leonidas con 300 espartanos y 7.000 aliados resistió tres días. Efialtes traicionó el paso secreto. El episodio se convirtió en símbolo eterno del sacrificio por la libertad.',
+    quote: '"Luchad con bravura, espartanos, este día o ahora o jamás." — VII.226' },
+  { lat: 37.9291, lng: 23.5133, name: 'Salamina', modern: 'Isla de Salamina, Grecia', books: [8], region: 'Grecia',
+    text: '480 a.C. Batalla naval decisiva. Jerjes observó desde un trono de oro la destrucción de su armada. Temístocles atrajo la flota persa al estrecho donde su número era una desventaja.',
+    quote: '"Jerjes contempló toda la batalla sentado al pie del monte Aigaleo." — VIII.90' },
+  { lat: 38.2200, lng: 23.2700, name: 'Platea', modern: 'Platees, Grecia', books: [9], region: 'Grecia',
+    text: '479 a.C. Batalla final terrestre. El regente espartano Pausanias lideró el ejército griego que aplastó a Mardonio y sus persas. Mardonio murió en combate. Fin de la invasión de Jerjes.',
+    quote: '"Esta fue la más gloriosa victoria que jamás hemos conocido." — IX.64' },
+  { lat: 37.6387, lng: 22.7266, name: 'Argos', modern: 'Argos, Grecia', books: [1,6,7,9], region: 'Grecia',
+    text: 'Ciudad rival de Esparta que se mantuvo neutral durante las invasiones persas. Heródoto narra la profecía que les fue dada y su deliberada inacción. Su neutralidad fue muy criticada.' },
+  { lat: 38.4316, lng: 24.0062, name: 'Eretria', modern: 'Eretria, Eubea', books: [5,6], region: 'Grecia',
+    text: 'Ciudad de Eubea que ayudó a la Revuelta Jónica. Los persas la destruyeron completamente en 490 a.C. y esclavizaron a su población, que fue deportada al interior de Persia.',
+    quote: '"Los persas quemaron los templos y los santuarios de Eretria." — VI.101' },
+  { lat: 37.7450, lng: 23.4320, name: 'Egina', modern: 'Egina, Grecia', books: [5,6,7,8], region: 'Grecia',
+    text: 'Isla rival de Atenas, sospechosa de medismo. Pese a las tensiones, los eginetas combatieron con gran valor en Salamina y fueron reconocidos como los más valientes de la batalla.',
+    quote: '"Los eginetas ganaron la palma del valor en Salamina." — VIII.93' },
+  { lat: 37.7292, lng: 22.7573, name: 'Epidauro', modern: 'Epidauro, Grecia', books: [5,8,9], region: 'Grecia',
+    text: 'Ciudad del Peloponeso famosa por el santuario de Asclepio. Participó en la alianza griega contra Persia con sus contingentes en Salamina y Platea.' },
+  { lat: 37.6397, lng: 22.4133, name: 'Tegea', modern: 'Tegea, Grecia', books: [1,9], region: 'Grecia',
+    text: 'Ciudad arcadia. En Platea, espartanos y tegeos combatieron juntos en el ala derecha contra la guardia personal persa. También aparece en relatos sobre las guerras del Peloponeso.' },
+  { lat: 37.7792, lng: 20.8874, name: 'Olimpia', modern: 'Olimpia, Grecia', books: [2,5,8], region: 'Grecia',
+    text: 'Santuario de Zeus y sede de los Juegos Olímpicos. Heródoto la menciona varias veces: los griegos prefirieron correr los Juegos antes que ir a la guerra, lo que fascinó a los persas.' },
+  { lat: 39.6400, lng: 22.4100, name: 'Valle del Tempe', modern: 'Tempe, Grecia', books: [7], region: 'Grecia',
+    text: 'El estrecho desfiladero entre el Monte Olimpo y el Ossa. Los griegos consideraron defenderlo antes de optar por las Termópilas. El ejército de Jerjes cruzó este paso hacia el sur.',
+    quote: '"El ejército de Jerjes atravesó el desfiladero del Tempe hacia Tesalia." — VII.173' },
 
-  // LIBRO II - EUTERPE (Egipto)
-  {
-    id: "menfis",
-    nombre: "Menfis",
-    nombreAntiguo: "Μέμφις",
-    lat: 29.85,
-    lng: 31.25,
-    tipo: "ciudad",
-    libro: "Euterpe",
-    descripcion:
-      "Antigua capital de Egipto donde Heródoto visitó el templo de Hefesto (Ptah) y escuchó relatos de los sacerdotes sobre milenios de historia.",
-    cita:
-      "Los sacerdotes de Menfis me contaron que Menes fue el primer rey de Egipto y que fue él quien separó con un dique las tierras de la inundación.",
-    importancia: 3,
-  },
-  {
-    id: "tebas-egipto",
-    nombre: "Tebas (Egipto)",
-    nombreAntiguo: "Θῆβαι",
-    lat: 25.718,
-    lng: 32.657,
-    tipo: "ciudad",
-    libro: "Euterpe",
-    descripcion:
-      "La gran ciudad del Alto Egipto, con sus templos de Amón (Karnak y Luxor). Heródoto la visitó y quedó impresionado por sus 100 puertas.",
-    cita: "Tebas es la ciudad de los cien portales.",
-    importancia: 3,
-  },
-  {
-    id: "nilo",
-    nombre: "Río Nilo",
-    nombreAntiguo: "Νεῖλος",
-    lat: 26.0,
-    lng: 32.5,
-    tipo: "rio",
-    libro: "Euterpe",
-    descripcion:
-      "Heródoto intentó descubrir el origen del Nilo y lo describió como el regalo de Egipto. Debatió las teorías sobre sus crecidas anuales.",
-    cita:
-      "Egipto es el don del Nilo.",
-    importancia: 3,
-  },
-  {
-    id: "giza",
-    nombre: "Pirámides de Guiza",
-    nombreAntiguo: "Αἴγυπτος πυραμίδες",
-    lat: 29.977,
-    lng: 31.132,
-    tipo: "maravilla",
-    libro: "Euterpe",
-    descripcion:
-      "Heródoto describe la construcción de la Gran Pirámide de Keops con detalle, mencionando 100.000 obreros trabajando en turnos de tres meses.",
-    cita:
-      "Keops redujo a todo el pueblo a la servidumbre... La pirámide se construyó de este modo: en escalones.",
-    importancia: 3,
-  },
-  {
-    id: "naucratis",
-    nombre: "Náucratis",
-    nombreAntiguo: "Ναύκρατις",
-    lat: 30.9,
-    lng: 30.58,
-    tipo: "ciudad",
-    libro: "Euterpe",
-    descripcion:
-      "Ciudad griega en el delta del Nilo, único puerto autorizado para el comercio entre Grecia y Egipto durante siglos.",
-    importancia: 2,
-    libro: "Euterpe",
-  },
+  // ── ISLAS EGEAS ───────────────────────────────────────
+  { lat: 37.7515, lng: 26.9358, name: 'Samos', modern: 'Isla de Samos, Grecia', books: [1,2,3,4,5,6,8,9], region: 'Islas Egeas',
+    text: 'La más poderosa de las islas jonias. Policrates la gobernó durante un período de enorme prosperidad. Heródoto la admira y narra los tres logros de ingeniería más grandes del mundo griego.',
+    quote: '"Los samios son los autores de tres grandes obras, las mayores de todos los griegos." — III.60' },
+  { lat: 38.3680, lng: 26.1360, name: 'Quíos', modern: 'Isla de Quíos, Grecia', books: [1,5,6,8], region: 'Islas Egeas',
+    text: 'Importante isla jónica. Participó en la Revuelta Jónica. Su flota combatió heroicamente en la batalla de Lade (494 a.C.) antes de la caída de Mileto.' },
+  { lat: 39.1000, lng: 26.5500, name: 'Lesbos', modern: 'Isla de Lesbos, Grecia', books: [1,5,8,9], region: 'Islas Egeas',
+    text: 'La mayor de las islas eolias. Mitilene era su ciudad principal. Participó en la Revuelta Jónica. En Micale participó activamente en la liberación jónica.' },
+  { lat: 37.2156, lng: 25.0757, name: 'Naxos', modern: 'Isla de Naxos, Grecia', books: [5,6,8], region: 'Islas Egeas',
+    text: 'La mayor de las Cícladas. La primera expedición persa de Aristágoras fracasó contra Naxos en 499 a.C., lo que desencadenó la Revuelta Jónica.',
+    quote: '"El fracaso ante Naxos fue la causa principal de la revuelta de Aristágoras." — V.30' },
+  { lat: 37.4472, lng: 24.9276, name: 'Paros', modern: 'Isla de Paros, Grecia', books: [6], region: 'Islas Egeas',
+    text: 'Isla de mármol del Egeo. Milcíades intentó saquearla tras la victoria de Maratón y fracasó. Fue herido y murió poco después.',
+    quote: '"Milcíades atacó Paros con 70 naves pero no consiguió nada digno de mención." — VI.133' },
+  { lat: 37.4492, lng: 25.3270, name: 'Delos', modern: 'Isla de Delos, Grecia', books: [2,6], region: 'Islas Egeas',
+    text: 'Isla sagrada de Apolo, centro religioso del Egeo. Heródoto menciona que un terremoto sacudió Delos antes de las guerras médicas, lo que fue interpretado como un presagio.',
+    quote: '"En Delos ocurrió un terremoto, el primero en mucho tiempo: presagio de los males venideros." — VI.98' },
+  { lat: 35.2401, lng: 25.0007, name: 'Creta', modern: 'Isla de Creta, Grecia', books: [1,2,3,7], region: 'Islas Egeas',
+    text: 'La mayor isla del Egeo. Los cretenses no enviaron ayuda a los griegos en las Guerras Médicas, invocando una profecía del oráculo de Delfos.',
+    quote: '"Los cretenses, interrogados por el oráculo, no participaron en la guerra." — VII.169' },
+  { lat: 36.4490, lng: 28.2235, name: 'Rodas', modern: 'Isla de Rodas, Grecia', books: [2,7], region: 'Islas Egeas',
+    text: 'Importante isla dórica del Egeo oriental. Participó en expediciones coloniales hacia Egipto. Heródoto la menciona en el contexto de los mercaderes griegos en el mundo mediterráneo.' },
 
-  // LIBRO IV - Escitia y Libia
-  {
-    id: "escitia",
-    nombre: "Escitia",
-    nombreAntiguo: "Σκυθία",
-    lat: 48.0,
-    lng: 36.0,
-    tipo: "region",
-    libro: "Melpomene",
-    descripcion:
-      "Las vastas estepas al norte del Mar Negro habitadas por los nómadas escitas, famosos por sus jinetes y por beber la sangre de sus enemigos.",
-    cita:
-      "Los escitas han descubierto lo más importante de todas las cosas humanas: ningún enemigo que los ataque puede escapar, ni ellos pueden ser atrapados si no quieren ser encontrados.",
-    importancia: 3,
-  },
-  {
-    id: "olbia",
-    nombre: "Olbia",
-    nombreAntiguo: "Ὀλβία",
-    lat: 46.6,
-    lng: 31.9,
-    tipo: "ciudad",
-    libro: "Melpomene",
-    descripcion:
-      "Ciudad griega en la desembocadura del río Hipánis (Bug), puerta de entrada al mundo escita. Heródoto posiblemente la visitó.",
-    importancia: 2,
-    libro: "Melpomene",
-  },
+  // ── JONIA / ANATOLIA ──────────────────────────────────
+  { lat: 38.4883, lng: 28.0403, name: 'Sardes (Sardis)', modern: 'Sart, Turquía', books: [1,2,3,5,6,7], region: 'Lidia',
+    text: 'Capital del reino de Lidia bajo Creso. Ciro la conquistó en 547 a.C. Los atenienses quemaron su santuario en 498 a.C., detonando la reacción persa que llevó a las Guerras Médicas.',
+    quote: '"Sardes era la ciudad más rica de Asia y la más codiciada por todos los reyes." — I.93' },
+  { lat: 37.9395, lng: 27.3414, name: 'Éfeso', modern: 'Selçuk, Turquía', books: [1,2,5,6], region: 'Lidia',
+    text: 'Gran ciudad jónica famosa por el Templo de Artemisa, financiado por Creso. Los efesios no participaron activamente en la revuelta jónica.' },
+  { lat: 37.5306, lng: 27.2761, name: 'Mileto', modern: 'Balat, Turquía', books: [1,2,5,6], region: 'Caria',
+    text: 'La ciudad jónica más poderosa. La Revuelta Jónica comenzó aquí (499 a.C.). Los persas la destruyeron completamente en 494 a.C. después de la batalla de Lade.',
+    quote: '"Los milesianos pagaron un terrible precio por su revuelta." — VI.18' },
+  { lat: 37.0379, lng: 27.4241, name: 'Halicarnaso', modern: 'Bodrum, Turquía', books: [7,8], region: 'Caria',
+    text: 'Ciudad natal de Heródoto. Gobernada por la reina Artemisia durante las guerras persas, quien combatió en Salamina del lado persa con gran habilidad.',
+    quote: '"Artemisia me asombra: siendo mujer ha marchado a la guerra." — VII.99' },
+  { lat: 36.8720, lng: 27.2760, name: 'Cnido', modern: 'Datça, Turquía', books: [1,2,3], region: 'Caria',
+    text: 'Ciudad dórica en la punta de la península anatólica. Intentó cortar el istmo para aislarse cuando llegaron los persas. El oráculo les dijo que si Zeus hubiera querido una isla, la habría hecho.' },
+  { lat: 36.6538, lng: 29.1168, name: 'Xanto (Licia)', modern: 'Kınık, Turquía', books: [1], region: 'Licia',
+    text: 'Capital de Licia. Cuando Hárpago la conquistó para Ciro, los licios prefirieron quemar su ciudad y morir antes que rendirse. Heródoto lo describe como un acto de heroísmo extremo.',
+    quote: '"Los licios de Xanto se comportaron con un valor extraordinario." — I.176' },
+  { lat: 38.6680, lng: 26.5515, name: 'Focea', modern: 'Foça, Turquía', books: [1], region: 'Lidia',
+    text: 'Ciudad jónica famosa por sus navegantes. Cuando los persas la conquistaron, sus habitantes emigraron masivamente, fundando Massalia (Marsella) y otras colonias de Occidente.',
+    quote: '"Los foceos fueron los primeros griegos que hicieron largos viajes por mar." — I.163' },
+  { lat: 37.5000, lng: 27.2500, name: 'Priene', modern: 'Güllübahçe, Turquía', books: [1], region: 'Caria',
+    text: 'Ciudad jónica de la dodecápolis. Sede del sabio Bias de Priene, uno de los Siete Sabios de Grecia, quien aconsejó a los jonios emigrar ante la conquista persa.' },
+  { lat: 39.1453, lng: 34.1608, name: 'Pteria (Capadocia)', modern: 'Boğazköy, Turquía', books: [1], region: 'Anatolia',
+    text: 'Ciudad de Capadocia donde se libró la batalla indecisa entre Creso y Ciro en 547 a.C. Tras la batalla Creso se retiró creyendo que la campaña había terminado: su error fatal.',
+    quote: '"Pteria era la ciudad más importante de esa región, y allí se enfrentaron Creso y Ciro." — I.76' },
 
-  // LIBRO V-VI - Guerras Médicas: Primera guerra
-  {
-    id: "maratón",
-    nombre: "Maratón",
-    nombreAntiguo: "Μαραθών",
-    lat: 38.152,
-    lng: 23.961,
-    tipo: "batalla",
-    libro: "Calliope",
-    descripcion:
-      "El campo de batalla donde en 490 a.C. los atenienses derrotaron al ejército persa de Darío. Los 10.000 griegos vencieron a 25.000 persas.",
-    cita:
-      "Los atenienses cargaron a la carrera contra los bárbaros. Los persas al ver que cargaban a pie y sin caballería ni arqueros, creyeron que estaban locos.",
-    importancia: 3,
-  },
-  {
-    id: "atenas",
-    nombre: "Atenas",
-    nombreAntiguo: "Ἀθῆναι",
-    lat: 37.971,
-    lng: 23.726,
-    tipo: "ciudad",
-    libro: "Calliope",
-    descripcion:
-      "La ciudad que lideró la resistencia griega contra Persia. Heródoto la llama 'la más grande de las ciudades griegas' y celebra su papel en las Guerras Médicas.",
-    cita:
-      "Los atenienses fueron el origen de la liberación de Grecia.",
-    importancia: 3,
-  },
-  {
-    id: "esparta",
-    nombre: "Esparta",
-    nombreAntiguo: "Σπάρτη",
-    lat: 37.075,
-    lng: 22.431,
-    tipo: "ciudad",
-    libro: "Calliope",
-    descripcion:
-      "Ciudad-estado guerrera, rival de Atenas y clave en la defensa de Grecia frente a Persia. Sus 300 hoplitas en las Termópilas se hicieron legendarios.",
-    importancia: 3,
-    libro: "Calliope",
-  },
+  // ── HELESPONTO / TRACIA / MACEDONIA ──────────────────
+  { lat: 40.0482, lng: 26.3013, name: 'Helesponto (Dardanelos)', modern: 'Çanakkale, Turquía', books: [4,7,8,9], region: 'Tracia',
+    text: 'El estrecho que separa Europa de Asia. Jerjes lo cruzó en 480 a.C. sobre un puente de 674 barcos. Cuando una tormenta lo destruyó, mandó azotar el mar con 300 latigazos.',
+    quote: '"Jerjes ordenó azotar el Helesponto con 300 latigazos y arrojar grilletes al agua." — VII.35' },
+  { lat: 40.1957, lng: 26.4142, name: 'Abidos', modern: 'Çanakkale, Turquía', books: [7,9], region: 'Tracia',
+    text: 'Ciudad en la orilla asiática del Helesponto. Desde aquí Jerjes contempló su ejército cruzando el puente. Se dice que lloró al pensar que en 100 años todos estarían muertos.',
+    quote: '"Jerjes lloró viendo el ejército. Pensó en la brevedad de la vida humana." — VII.46' },
+  { lat: 40.0310, lng: 26.2260, name: 'Sestos', modern: 'Eceabat, Turquía', books: [7,9], region: 'Tracia',
+    text: 'Ciudad en la orilla europea del Helesponto. Tras la victoria griega, los atenienses sitiaron y tomaron Sestos en 479 a.C. Con ello termina físicamente el relato de Heródoto.',
+    quote: '"La toma de Sestos marcó el final de la guerra." — IX.121' },
+  { lat: 40.9970, lng: 28.9770, name: 'Bizancio', modern: 'Estambul, Turquía', books: [4,5,6,9], region: 'Tracia',
+    text: 'Ciudad griega en el Bósforo, fundada por los megarenses. Darío la usó como base en su campaña escita. Más tarde los atenienses la tomaron tras las Guerras Médicas.',
+    quote: '"Darío pasó por Bizancio y cruzó a Europa." — IV.85' },
+  { lat: 40.8220, lng: 26.1140, name: 'Eno', modern: 'Enez, Grecia', books: [4,7], region: 'Tracia',
+    text: 'Ciudad griega en la costa tracia, cerca de la desembocadura del Hebros. El ejército de Jerjes atravesó la región en su marcha hacia Grecia siguiendo la costa egea.' },
+  { lat: 41.0750, lng: 25.4013, name: 'Abdera', modern: 'Ávdira, Grecia', books: [1,7,8], region: 'Tracia',
+    text: 'Ciudad griega de Tracia, fundada por los exiliados de Teos que huyeron de los persas. Jerjes se detuvo aquí en su avance y fue recibido con grandes honores.',
+    quote: '"Jerjes comió con los de Abdera y los regaló con la vajilla de oro del rey." — VIII.120' },
+  { lat: 40.8436, lng: 24.9218, name: 'Anfípolis (Ennea Hodoi)', modern: 'Amfípolis, Grecia', books: [7], region: 'Macedonia',
+    text: 'Lugar estratégico en el río Estrimón. Heródoto lo llama "Nueve Caminos". Jerjes cruzó el río aquí y realizó sacrificios enterrando vivos a nueve jóvenes y doncellas.' },
+  { lat: 40.5000, lng: 23.0600, name: 'Monte Atos', modern: 'Monte Athos, Grecia', books: [6,7], region: 'Macedonia',
+    text: 'Península y monte sagrado. La flota persa fue destruida aquí en 492 a.C. Para evitarlo en 480, Jerjes mandó excavar un canal a través del istmo de la península.',
+    quote: '"Jerjes mandó cavar el canal del Atos para evitar el desastre que sufrió Mardonio." — VII.22' },
+  { lat: 40.4764, lng: 22.9441, name: 'Terma (Tesalónica)', modern: 'Tesalónica, Grecia', books: [7], region: 'Macedonia',
+    text: 'Ciudad del golfo Termaico. Jerjes acampó aquí durante su invasión. Heródoto describe cómo el rey persa admiró la desembocadura de los ríos y los montes Olimpo y Osa.',
+    quote: '"El ejército se congregó en Terma, en el golfo que lleva ese nombre." — VII.121' },
+  { lat: 41.3363, lng: 23.6933, name: 'Dorisco', modern: 'Cerca de Alexandrúpolis, Grecia', books: [7], region: 'Tracia',
+    text: 'Llanura tracia donde Jerjes pasó revista a su ejército. Heródoto intenta calcular el número total de soldados: 1.700.000 infantes según su cálculo.',
+    quote: '"En Dorisco Jerjes contó su ejército: 1.700.000 infantes y 80.000 jinetes." — VII.60' },
+  { lat: 39.9573, lng: 26.2389, name: 'Troya (Ilión)', modern: 'Hisarlik, Turquía', books: [1,2,7], region: 'Tróade',
+    text: 'La mítica ciudad de la guerra de Troya. Jerjes se detuvo aquí y realizó sacrificios a la Atenea de Ilión. Heródoto comienza su obra discutiendo el conflicto entre Europa y Asia.',
+    quote: '"Jerjes subió a la ciudadela de Príamo y contempló el lugar con deleite." — VII.43' },
 
-  // LIBRO VII - Jerjes invade Grecia
-  {
-    id: "termópilas",
-    nombre: "Termópilas",
-    nombreAntiguo: "Θερμοπύλαι",
-    lat: 38.797,
-    lng: 22.535,
-    tipo: "batalla",
-    libro: "Polymnia",
-    descripcion:
-      "El paso costero donde en 480 a.C. el rey Leónidas y sus 300 espartanos (junto a otros aliados griegos) resistieron al ejército persa de Jerjes durante tres días.",
-    cita:
-      "Extranjero, ve a decir a Lacedemonia que aquí yacemos obedeciendo sus leyes.",
-    importancia: 3,
-  },
-  {
-    id: "helesponto",
-    nombre: "Helesponto",
-    nombreAntiguo: "Ἑλλήσποντος",
-    lat: 40.15,
-    lng: 26.4,
-    tipo: "mar",
-    libro: "Polymnia",
-    descripcion:
-      "El estrecho de los Dardanelos, donde Jerjes construyó su famoso puente de barcos para cruzar con su ejército de Persia a Europa en 480 a.C.",
-    cita:
-      "Jerjes mandó azotar el Helesponto con trescientos latigazos y le echó cadenas al mar, como si fuera un esclavo.",
-    importancia: 3,
-  },
-  {
-    id: "salamina",
-    nombre: "Salamina",
-    nombreAntiguo: "Σαλαμίς",
-    lat: 37.955,
-    lng: 23.493,
-    tipo: "batalla",
-    libro: "Urania",
-    descripcion:
-      "La batalla naval decisiva de 480 a.C. donde la flota griega, liderada por Temístocles, destruyó la armada persa de Jerjes y salvó a Grecia.",
-    cita:
-      "En Salamina fue donde los griegos consiguieron su mayor victoria naval sobre los bárbaros.",
-    importancia: 3,
-  },
-  {
-    id: "platea",
-    nombre: "Platea",
-    nombreAntiguo: "Πλαταιαί",
-    lat: 38.22,
-    lng: 23.27,
-    tipo: "batalla",
-    libro: "Calliope",
-    descripcion:
-      "La batalla terrestre final de las Guerras Médicas en 479 a.C., donde los griegos bajo Pausanias derrotaron definitivamente al ejército persa.",
-    importancia: 3,
-    libro: "Calliope",
-  },
+  // ── PERSIA / MESOPOTAMIA ──────────────────────────────
+  { lat: 29.9356, lng: 52.8892, name: 'Persépolis', modern: 'Shiraz, Irán', books: [3,7], region: 'Persia',
+    text: 'Ciudad ceremonial del Imperio Aqueménide. Recibía tributos de 20 naciones. Heródoto describe la riqueza del rey persa y los ceremoniales de la corte en la capital del mundo.',
+    quote: '"Todos los años el rey recibía el tributo de sus satrapías: la riqueza era inmensa." — III.89' },
+  { lat: 32.1909, lng: 48.2556, name: 'Susa', modern: 'Shush, Irán', books: [3,5,6,7,8,9], region: 'Persia',
+    text: 'Capital administrativa de los reyes persas. Desde aquí Darío y Jerjes organizaron las invasiones de Grecia. El palacio de Darío era legendario por su riqueza.',
+    quote: '"En Susa residía el Gran Rey durante el invierno." — V.53' },
+  { lat: 34.8046, lng: 48.5179, name: 'Ecbatana', modern: 'Hamadán, Irán', books: [1,3,7], region: 'Media',
+    text: 'Capital de Media y capital de verano de los reyes persas. Heródoto la describe con siete murallas concéntricas de colores distintos: blanco, negro, escarlata, azul, naranja, plata y oro.',
+    quote: '"Deíoces mandó construir una ciudad llamada Ecbatana con siete murallas circulares." — I.98' },
+  { lat: 30.1940, lng: 53.1672, name: 'Pasargadae', modern: 'Fars, Irán', books: [1], region: 'Persia',
+    text: 'Primera capital del Imperio Persa, fundada por Ciro el Grande. La tumba de Ciro se conserva casi intacta con su famosa inscripción: "Soy Ciro, el rey del mundo".' },
+  { lat: 32.5419, lng: 44.4209, name: 'Babilonia', modern: 'Al Hillah, Iraq', books: [1,3,4], region: 'Babilonia',
+    text: 'La mayor ciudad del mundo antiguo. Heródoto le dedica páginas asombrosas: murallas de 25 metros, jardines colgantes, el templo de Marduk. Ciro la conquistó en 539 a.C.',
+    quote: '"Babilonia supera en magnificencia a todas las ciudades que conocemos." — I.178' },
+  { lat: 36.3579, lng: 43.1583, name: 'Nínive', modern: 'Mosul, Iraq', books: [1,2], region: 'Asiria',
+    text: 'Antigua capital asiria. Heródoto menciona su caída como antecedente del poder medo. Los medos y babilonios la destruyeron en 612 a.C., abriendo el camino al Imperio Persa.' },
 
-  // Otros lugares importantes
-  {
-    id: "corinto",
-    nombre: "Corinto",
-    nombreAntiguo: "Κόρινθος",
-    lat: 37.908,
-    lng: 22.878,
-    tipo: "ciudad",
-    libro: "Clio",
-    descripcion:
-      "Ciudad comercial en el istmo que une Grecia central con el Peloponeso. Importante en el relato de la tiranía de los Cipselidas.",
-    importancia: 2,
-    libro: "Clio",
-  },
-  {
-    id: "delfos",
-    nombre: "Delfos",
-    nombreAntiguo: "Δελφοί",
-    lat: 38.482,
-    lng: 22.501,
-    tipo: "maravilla",
-    libro: "Clio",
-    descripcion:
-      "El oráculo más importante del mundo griego. Creso lo consultó antes de atacar a Persia y recibió la famosa respuesta: 'Destruirás un gran imperio' (el suyo propio).",
-    cita:
-      "Si atacas a los persas, destruirás un gran imperio.",
-    importancia: 3,
-  },
-  {
-    id: "susa",
-    nombre: "Susa",
-    nombreAntiguo: "Σοῦσα",
-    lat: 32.188,
-    lng: 48.259,
-    tipo: "ciudad",
-    libro: "Terpsichore",
-    descripcion:
-      "Capital administrativa del Imperio Persa y residencia principal de Darío y Jerjes. Desde aquí se coordinaron las expediciones contra Grecia.",
-    importancia: 3,
-    libro: "Terpsichore",
-  },
-  {
-    id: "mileto",
-    nombre: "Mileto",
-    nombreAntiguo: "Μίλητος",
-    lat: 37.532,
-    lng: 27.278,
-    tipo: "ciudad",
-    libro: "Terpsichore",
-    descripcion:
-      "La ciudad jonia más importante, cuna del pensamiento filosófico griego y origen de la Revuelta Jonia (499-493 a.C.) que desencadenó las Guerras Médicas.",
-    cita:
-      "La revuelta de Mileto fue el inicio de los males tanto para los bárbaros como para los griegos.",
-    importancia: 3,
-  },
-  {
-    id: "cartago",
-    nombre: "Cartago",
-    nombreAntiguo: "Καρχηδών",
-    lat: 36.853,
-    lng: 10.323,
-    tipo: "ciudad",
-    libro: "Euterpe",
-    descripcion:
-      "Gran ciudad fenicia en el norte de África, mencionada por Heródoto en relación con el comercio mediterráneo y las exploraciones africanas.",
-    importancia: 2,
-    libro: "Euterpe",
-  },
-  {
-    id: "india",
-    nombre: "India",
-    nombreAntiguo: "Ἰνδική",
-    lat: 20.0,
-    lng: 78.0,
-    tipo: "region",
-    libro: "Thalia",
-    descripcion:
-      "El confín oriental del mundo conocido para Heródoto. Describe sus riquezas, sus gentes y criaturas fabulosas como las hormigas del tamaño de zorros que extraen oro.",
-    cita:
-      "En India hay hormigas más grandes que un zorro pero más pequeñas que un perro, que al excavar sus madrigueras sacan arena mezclada con oro.",
-    importancia: 2,
-  },
-  {
-    id: "etiopia",
-    nombre: "Etiopía",
-    nombreAntiguo: "Αἰθιοπία",
-    lat: 8.0,
-    lng: 38.0,
-    tipo: "region",
-    libro: "Thalia",
-    descripcion:
-      "El extremo sur del mundo conocido, tierra de hombres de vida larga. Cambyses envió embajadores pero su expedición terminó en desastre.",
-    cita:
-      "Los etíopes son los hombres más altos, más hermosos y de vida más larga del mundo.",
-    importancia: 2,
-  },
+  // ── EGIPTO ────────────────────────────────────────────
+  { lat: 29.8493, lng: 31.2558, name: 'Menfis', modern: 'Mit Rahina, Egipto', books: [2,3], region: 'Egipto',
+    text: 'Capital del Bajo Egipto, sede del dios Ptah. Heródoto la visitó y describe el gran templo. Cambises profanó el templo y mató al toro sagrado Apis según la tradición.',
+    quote: '"Menfis es la ciudad más hermosa de Egipto y tiene el templo más grandioso." — II.3' },
+  { lat: 30.0626, lng: 31.2497, name: 'Heliópolis', modern: 'El Cairo (Heliópolis), Egipto', books: [2], region: 'Egipto',
+    text: 'Ciudad del sol en el Bajo Egipto. Heródoto la visitó y dice que sus sacerdotes fueron los más instruidos en historia antigua. Aquí aprendió mucho sobre la historia de Egipto.',
+    quote: '"Los sacerdotes de Heliópolis son los más eruditos de Egipto." — II.3' },
+  { lat: 30.9697, lng: 31.1668, name: 'Sais', modern: 'Sa el-Hagar, Egipto', books: [2], region: 'Egipto',
+    text: 'Capital de la XXVI Dinastía, donde gobernó Amasis. Heródoto narra historias fascinantes sobre Amasis: antes de ser rey era un borracho que robaba estatuas para hacerlas ídolos.',
+    quote: '"Amasis fue un hombre de origen humilde pero de extraordinaria habilidad política." — II.172' },
+  { lat: 29.9753, lng: 31.1325, name: 'Giza', modern: 'Giza, Egipto', books: [2], region: 'Egipto',
+    text: 'Sede de las pirámides, que Heródoto describe con asombro. Habla de la pirámide de Keops como la obra de un faraón tiránico que obligó a todos los egipcios a trabajar en su construcción.',
+    quote: '"La pirámide tiene 8 estadios de longitud en cada lado y la misma altura." — II.124' },
+  { lat: 25.7019, lng: 32.6329, name: 'Tebas (Egipto)', modern: 'Luxor, Egipto', books: [2], region: 'Egipto',
+    text: 'Capital del Alto Egipto, ciudad de Amón. Heródoto describe sus 100 puertas y sus majestuosos templos. La compara con la Tebas griega para explicar el origen del nombre.',
+    quote: '"Los egipcios llaman a esta ciudad No-Amón, los griegos la llaman Tebas." — II.42' },
+  { lat: 24.0889, lng: 32.8998, name: 'Elefantina', modern: 'Asuán, Egipto', books: [2], region: 'Egipto',
+    text: 'Ciudad en la primera catarata del Nilo. Heródoto la visita y describe sus famosas cataratas. La ciudad marcaba la frontera entre Egipto y Etiopía (Nubia).',
+    quote: '"El Nilo al sur de Elefantina tiene muchos islotes y cataratas." — II.17' },
+  { lat: 31.1152, lng: 32.0724, name: 'Pelusio', modern: 'Tell el-Farama, Egipto', books: [2,3], region: 'Egipto',
+    text: 'Ciudad fronteriza en el delta oriental del Nilo. Cambises derrotó al ejército egipcio aquí en 525 a.C. Heródoto describe que los persas usaron gatos sagrados como escudos.',
+    quote: '"Cambises venció en Pelusio y conquistó Egipto." — III.10' },
+
+  // ── LEVANTE / FENICIA ─────────────────────────────────
+  { lat: 33.2721, lng: 35.2033, name: 'Tiro', modern: 'Sur, Líbano', books: [2,7], region: 'Fenicia',
+    text: 'La gran ciudad fenicia, poderosa y comercialmente dominante. Heródoto la visita y describe el antiguo templo de Hércules (Melqart). Los fenicios eran los mejores marinos de la flota persa.',
+    quote: '"Tiro tiene el templo más antiguo de Hércules, fundado hace 2300 años." — II.44' },
+  { lat: 33.5620, lng: 35.3700, name: 'Sidón', modern: 'Saida, Líbano', books: [7,8], region: 'Fenicia',
+    text: 'Segunda ciudad fenicia. Sus trirremes eran los mejores de la flota de Jerjes. La reina Artemisia de Halicarnaso fue superada en honores sólo por los sidonios en la flota persa.',
+    quote: '"Los sidonios eran los mejores marineros de toda la flota persa." — VII.100' },
+  { lat: 31.7683, lng: 35.2137, name: 'Gaza (Cadytis)', modern: 'Gaza, Palestina', books: [2,3], region: 'Fenicia',
+    text: 'Ciudad importante de la región. Heródoto la llama Cadytis y la compara con Sardis en tamaño. Fue conquistada por el faraón Necao después de la batalla de Megido.',
+    quote: '"Cadytis, ciudad no menor que Sardes, la conquistó Necao de Egipto." — II.159' },
+
+  // ── ESCITIA ───────────────────────────────────────────
+  { lat: 46.4825, lng: 30.7233, name: 'Olbia (Borístenitas)', modern: 'Mykolaiv, Ucrania', books: [4], region: 'Escitia',
+    text: 'Ciudad griega en la desembocadura del Dniéper. Principal puerto griego del Mar Negro. Heródoto la visitó probablemente y la usa como base para describir Escitia.',
+    quote: '"El Borísthenes (Dniéper) es el más útil de los ríos escitas, después del Nilo." — IV.53' },
+  { lat: 45.5000, lng: 33.6000, name: 'Quersoneso Táurico', modern: 'Crimea, Ucrania', books: [4], region: 'Escitia',
+    text: 'La península de Crimea. Heródoto describe a los tauros, sus habitantes, que sacrificaban a los náufragos a una diosa virgen. También describe las colonias griegas allí.',
+    quote: '"Los tauros tienen la costumbre de sacrificar a todos los náufragos." — IV.103' },
+
+  // ── NORTE DE AFRICA ───────────────────────────────────
+  { lat: 32.8234, lng: 21.8531, name: 'Cirene', modern: 'Shahhat, Libia', books: [2,3,4], region: 'Norte de África',
+    text: 'La principal colonia griega de Libia, fundada por los de la isla de Tera siguiendo el oráculo de Delfos. Rica ciudad famosa por sus caballos y su silfio (planta medicinal).',
+    quote: '"Los de Cirene afirman que el oráculo de Delfos los instó a fundar la ciudad." — IV.155' },
 ];
-
-export const TIPO_COLORES: Record<PlaceType, string> = {
-  ciudad: "#c26d19",
-  region: "#6b8e23",
-  batalla: "#8b1a1a",
-  maravilla: "#9370db",
-  rio: "#4682b4",
-  mar: "#20b2aa",
-  montaña: "#696969",
-};
-
-export const TIPO_ICONOS: Record<PlaceType, string> = {
-  ciudad: "🏛️",
-  region: "🗺️",
-  batalla: "⚔️",
-  maravilla: "✨",
-  rio: "🌊",
-  mar: "⛵",
-  montaña: "⛰️",
-};
