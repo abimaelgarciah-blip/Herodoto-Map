@@ -51,13 +51,12 @@ export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, onVi
 
       L.control.zoom({ position: "topright" }).addTo(map);
 
-      // CartoDB Dark Matter — dark tiles, no API key needed
+      // OpenStreetMap — reliable, filtered to dark/ancient look via CSS
       L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
           attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: "abcd",
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
           maxZoom: 19,
         }
       ).addTo(map);
@@ -121,9 +120,9 @@ export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, onVi
 
       RIVERS.forEach(river => {
         const line = L.polyline(river.coords as [number, number][], {
-          color: "#74c6f0",
-          weight: 2,
-          opacity: 0.65,
+          color: "#a8d8f0",
+          weight: 2.5,
+          opacity: 0.85,
           smoothFactor: 1,
         });
         line.bindTooltip(`${river.name} · ${river.ancient}`, { sticky: true });

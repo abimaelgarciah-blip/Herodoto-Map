@@ -13,9 +13,12 @@ body {
 }
 
 /* ── Map ── */
-#map { width: 100%; height: 100%; background: #0d1e2e; }
+#map { width: 100%; height: 100%; background: #1a2a3a; }
 
-/* CartoDB Dark Matter tiles already have the right dark style — no filter needed */
+/* OSM tiles filtered to dark/ancient look: visible geography, warm tones */
+.leaflet-tile-pane {
+  filter: brightness(0.5) saturate(0.5) sepia(0.4);
+}
 
 /* ── Popups ── */
 .leaflet-popup-content-wrapper {
