@@ -23,6 +23,7 @@ export default function Home() {
   const [search, setSearch]             = useState("");
   const [searchOpen, setSearchOpen]     = useState(false);
   const [showRivers, setShowRivers]     = useState(true);
+  const [showRegions, setShowRegions]   = useState(true);
 
   const handleToggleBook = useCallback((id: number) => {
     setActiveBooks(prev => {
@@ -159,6 +160,14 @@ export default function Home() {
         >
           🌊 Ríos
         </button>
+
+        {/* Regions toggle */}
+        <button
+          onClick={() => setShowRegions(v => !v)}
+          style={showRegions ? btnBase : btnOff}
+        >
+          🗺 Regiones
+        </button>
       </header>
 
       {/* ── CONTENT ── */}
@@ -170,6 +179,7 @@ export default function Home() {
           activeBooks={activeBooks}
           flyToPlace={flyToPlace}
           showRivers={showRivers}
+          showRegions={showRegions}
           onVisibleCount={handleVisibleCount}
         />
 

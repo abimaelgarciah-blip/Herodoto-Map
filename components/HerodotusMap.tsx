@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { PLACES, BOOKS, type Place } from "@/data/places";
 import { RIVERS } from "@/data/rivers";
+import { REGIONS } from "@/data/regions";
 
 interface HerodotusMapProps {
   activeBooks: Set<number>;
   flyToPlace: Place | null;
   showRivers: boolean;
+  showRegions: boolean;
   onVisibleCount: (n: number) => void;
 }
 
@@ -29,11 +31,12 @@ function buildPopup(place: Place): string {
   `;
 }
 
-export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, onVisibleCount }: HerodotusMapProps) {
+export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, showRegions, onVisibleCount }: HerodotusMapProps) {
   const mapRef    = useRef<HTMLDivElement>(null);
   const mapObj    = useRef<any>(null);
   const markers   = useRef<Map<string, any>>(new Map());
   const riverLayers = useRef<any[]>([]);
+  const regionLayers = useRef<any[]>([]);
   const [ready, setReady] = useState(false);
 
   // Init map once
@@ -71,6 +74,7 @@ export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, onVi
         mapObj.current = null;
         markers.current.clear();
         riverLayers.current = [];
+        regionLayers.current = [];
       }
     };
   }, []);
@@ -131,6 +135,46 @@ export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, onVi
       });
     });
   }, [ready, showRivers]);
+
+  // Sync region polygons
+  useEffect(() => {
+    if (!ready || !mapObj.current) return;
+
+    import("leaflet").then(L => {
+      regionLayers.current.forEach(l => l.remove());
+      regionLayers.current = [];
+
+      if (!showRegions) return;
+
+      REGIONS.forEach(region => {
+        const polygon = L.polygon(region.coords as [number, number][], {
+          color: region.color,
+          weight: 1.5,
+          opacity: 0.6,
+          fillColor: region.color,
+          fillOpacity: 0.12,
+          dashArray: '4 4',
+        });
+        polygon.bindTooltip(
+          `<span style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.08em">${region.name} · ${region.ancient}</span>`,
+          { sticky: true, className: 'leaflet-tooltip' }
+        );
+        polygon.addTo(mapObj.current);
+        regionLayers.current.push(polygon);
+
+        // Region label
+        const label = L.marker(region.labelAt as [number, number], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="font-family:'Cinzel',serif;font-size:.62rem;color:${region.color};letter-spacing:.1em;text-shadow:0 0 6px #000,0 0 12px #000;white-space:nowrap;pointer-events:none;opacity:.85">${region.ancient}</div>`,
+            iconAnchor: [0, 0],
+          }),
+        });
+        label.addTo(mapObj.current);
+        regionLayers.current.push(label);
+      });
+    });
+  }, [ready, showRegions]);
 
   // Fly to selected place
   useEffect(() => {
