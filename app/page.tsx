@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Sidebar from "@/components/Sidebar";
+import CharacterPanel from "@/components/CharacterPanel";
 import { PLACES, type Place } from "@/data/places";
 
 const HerodotusMap = dynamic(() => import("@/components/HerodotusMap"), {
@@ -24,6 +25,8 @@ export default function Home() {
   const [searchOpen, setSearchOpen]     = useState(false);
   const [showRivers, setShowRivers]     = useState(true);
   const [showRegions, setShowRegions]   = useState(true);
+  const [showCharacters, setShowCharacters] = useState(false);
+  const [charFlyTo, setCharFlyTo]       = useState<{ lat: number; lng: number } | null>(null);
 
   const handleToggleBook = useCallback((id: number) => {
     setActiveBooks(prev => {
@@ -49,6 +52,10 @@ export default function Home() {
     setSearchOpen(false);
   };
 
+  const handleCharFlyTo = useCallback((lat: number, lng: number) => {
+    setCharFlyTo({ lat, lng });
+  }, []);
+
   const btnBase: React.CSSProperties = {
     fontFamily: "'Cinzel', serif",
     fontSize: '.62rem',
@@ -70,6 +77,13 @@ export default function Home() {
     color: '#5a3e1b',
     borderColor: '#3d2b0f',
     background: 'transparent',
+  };
+
+  const btnGold: React.CSSProperties = {
+    ...btnBase,
+    border: '1px solid rgba(201,162,39,.5)',
+    background: 'rgba(201,162,39,.12)',
+    color: '#c9a227',
   };
 
   return (
@@ -154,19 +168,18 @@ export default function Home() {
         </div>
 
         {/* Rivers toggle */}
-        <button
-          onClick={() => setShowRivers(v => !v)}
-          style={showRivers ? btnBase : btnOff}
-        >
+        <button onClick={() => setShowRivers(v => !v)} style={showRivers ? btnBase : btnOff}>
           🌊 Ríos
         </button>
 
         {/* Regions toggle */}
-        <button
-          onClick={() => setShowRegions(v => !v)}
-          style={showRegions ? btnBase : btnOff}
-        >
+        <button onClick={() => setShowRegions(v => !v)} style={showRegions ? btnBase : btnOff}>
           🗺 Regiones
+        </button>
+
+        {/* Characters toggle */}
+        <button onClick={() => setShowCharacters(v => !v)} style={showCharacters ? btnGold : { ...btnOff, opacity: 1 }}>
+          👤 Personajes
         </button>
       </header>
 
@@ -178,9 +191,16 @@ export default function Home() {
         <HerodotusMap
           activeBooks={activeBooks}
           flyToPlace={flyToPlace}
+          charFlyTo={charFlyTo}
           showRivers={showRivers}
           showRegions={showRegions}
           onVisibleCount={handleVisibleCount}
+        />
+
+        <CharacterPanel
+          open={showCharacters}
+          onClose={() => setShowCharacters(false)}
+          onFlyTo={handleCharFlyTo}
         />
 
         <div style={{

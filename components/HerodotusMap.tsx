@@ -8,6 +8,7 @@ import { REGIONS } from "@/data/regions";
 interface HerodotusMapProps {
   activeBooks: Set<number>;
   flyToPlace: Place | null;
+  charFlyTo: { lat: number; lng: number } | null;
   showRivers: boolean;
   showRegions: boolean;
   onVisibleCount: (n: number) => void;
@@ -31,7 +32,7 @@ function buildPopup(place: Place): string {
   `;
 }
 
-export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, showRegions, onVisibleCount }: HerodotusMapProps) {
+export default function HerodotusMap({ activeBooks, flyToPlace, charFlyTo, showRivers, showRegions, onVisibleCount }: HerodotusMapProps) {
   const mapRef    = useRef<HTMLDivElement>(null);
   const mapObj    = useRef<any>(null);
   const markers   = useRef<Map<string, any>>(new Map());
@@ -184,6 +185,12 @@ export default function HerodotusMap({ activeBooks, flyToPlace, showRivers, show
       markers.current.get(flyToPlace.name)?.openPopup();
     }, 1300);
   }, [flyToPlace]);
+
+  // Fly to character location
+  useEffect(() => {
+    if (!charFlyTo || !mapObj.current) return;
+    mapObj.current.flyTo([charFlyTo.lat, charFlyTo.lng], 7, { duration: 1.4 });
+  }, [charFlyTo]);
 
   return (
     <div className="w-full h-full relative">
