@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BOOKS, PLACES, type Place } from "@/data/places";
+import { BOOKS, KINDS, PLACES, type Place, type PlaceKind } from "@/data/places";
 import { ROUTES } from "@/data/routes";
 
 interface SidebarProps {
   activeBooks: Set<number>;
+  activeKinds: Set<PlaceKind>;
   activeRoutes: Set<string>;
   visiblePlaces: Place[];
   onToggleBook: (id: number) => void;
   onOnlyBook: (id: number) => void;
   onSetAllBooks: (on: boolean) => void;
+  onToggleKind: (kind: PlaceKind) => void;
   onToggleRoute: (id: string) => void;
   onSelectPlace: (place: Place) => void;
 }
@@ -20,9 +22,14 @@ const COUNT_PER_BOOK: Record<number, number> = Object.fromEntries(
   BOOK_IDS.map(id => [id, PLACES.filter(p => p.books.includes(id)).length])
 );
 
+const KIND_IDS = Object.keys(KINDS) as PlaceKind[];
+const COUNT_PER_KIND = Object.fromEntries(
+  KIND_IDS.map(k => [k, PLACES.filter(p => p.kind === k).length])
+) as Record<PlaceKind, number>;
+
 export default function Sidebar({
-  activeBooks, activeRoutes, visiblePlaces,
-  onToggleBook, onOnlyBook, onSetAllBooks, onToggleRoute, onSelectPlace,
+  activeBooks, activeKinds, activeRoutes, visiblePlaces,
+  onToggleBook, onOnlyBook, onSetAllBooks, onToggleKind, onToggleRoute, onSelectPlace,
 }: SidebarProps) {
   const [open, setOpen] = useState(true);
 
@@ -85,6 +92,25 @@ export default function Sidebar({
           );
         })}
 
+        <div className="sidebar-title"><span>Tipo de lugar</span></div>
+        {KIND_IDS.map(kind => {
+          const active = activeKinds.has(kind);
+          return (
+            <div key={kind} className="sidebar-row">
+              <button
+                type="button"
+                className="sidebar-item"
+                aria-pressed={active}
+                onClick={() => onToggleKind(kind)}
+              >
+                <span className={`kind-mark kind-mark--${kind}`} style={{ opacity: active ? 1 : 0.25 }} />
+                <span className="sidebar-label" style={{ opacity: active ? 1 : 0.4 }}>{KINDS[kind].plural}</span>
+                <span className="sidebar-count">{COUNT_PER_KIND[kind]}</span>
+              </button>
+            </div>
+          );
+        })}
+
         <div className="sidebar-title"><span>Rutas</span></div>
         {ROUTES.map(route => {
           const active = activeRoutes.has(route.id);
@@ -109,14 +135,14 @@ export default function Sidebar({
           <span className="sidebar-count">{visiblePlaces.length}</span>
         </div>
         {byRegion.length === 0 && (
-          <div className="sidebar-empty">Ningún libro seleccionado.</div>
+          <div className="sidebar-empty">Ningún lugar con estos filtros.</div>
         )}
         {byRegion.map(([region, list]) => (
           <div key={region}>
             <div className="sidebar-region">{region}</div>
             {list.map(p => (
               <button key={p.name} type="button" className="sidebar-place" onClick={() => selectPlace(p)}>
-                <span className="dot dot--sm" style={{ background: BOOKS[p.books.find(b => activeBooks.has(b)) ?? p.books[0]].color }} />
+                <span className={p.kind === "batalla" ? "dot dot--sm dot--battle" : "dot dot--sm"} style={{ background: BOOKS[p.books.find(b => activeBooks.has(b)) ?? p.books[0]].color }} />
                 {p.name}
               </button>
             ))}

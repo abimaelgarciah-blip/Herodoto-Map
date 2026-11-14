@@ -3,8 +3,10 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Sidebar from "@/components/Sidebar";
-import type { Selection } from "@/components/HerodotusMap";
-import { PLACES, BOOKS, type Place } from "@/data/places";
+import TourPanel from "@/components/TourPanel";
+import type { Selection, TourView } from "@/components/HerodotusMap";
+import { PLACES, BOOKS, KINDS, type Place, type PlaceKind } from "@/data/places";
+import { TOURS, stepLatLng } from "@/data/tours";
 
 const HerodotusMap = dynamic(() => import("@/components/HerodotusMap"), {
   ssr: false,
@@ -18,6 +20,7 @@ const HerodotusMap = dynamic(() => import("@/components/HerodotusMap"), {
 });
 
 const ALL_BOOKS = Object.keys(BOOKS).map(Number);
+const ALL_KINDS = Object.keys(KINDS) as PlaceKind[];
 
 /** Minúsculas y sin acentos, para que «efeso» encuentre «Éfeso» */
 const normalize = (s: string) =>
@@ -31,6 +34,10 @@ const SEARCH_INDEX = PLACES.map(p => ({
 
 export default function Home() {
   const [activeBooks, setActiveBooks]   = useState<Set<number>>(() => new Set(ALL_BOOKS));
+  const [activeKinds, setActiveKinds]   = useState<Set<PlaceKind>>(() => new Set(ALL_KINDS));
+  const [tour, setTour]                 = useState<{ id: string; step: number } | null>(null);
+  const [tourMenu, setTourMenu]         = useState(false);
+  const tourBox = useRef<HTMLDivElement>(null);
   const [activeRoutes, setActiveRoutes] = useState<Set<string>>(() => new Set());
   const [selection, setSelection]       = useState<Selection | null>(null);
   const [fitNonce, setFitNonce]         = useState(0);
@@ -48,6 +55,13 @@ export default function Home() {
   }, []);
   const handleOnlyBook = useCallback((id: number) => setActiveBooks(new Set([id])), []);
   const handleSetAllBooks = useCallback((on: boolean) => setActiveBooks(new Set(on ? ALL_BOOKS : [])), []);
+  const handleToggleKind = useCallback((kind: PlaceKind) => {
+    setActiveKinds(prev => {
+      const next = new Set(prev);
+      next.has(kind) ? next.delete(kind) : next.add(kind);
+      return next;
+    });
+  }, []);
   const handleToggleRoute = useCallback((id: string) => {
     setActiveRoutes(prev => {
       const next = new Set(prev);
@@ -57,8 +71,8 @@ export default function Home() {
   }, []);
 
   const visiblePlaces = useMemo(
-    () => PLACES.filter(p => p.books.some(b => activeBooks.has(b))),
-    [activeBooks]
+    () => PLACES.filter(p => activeKinds.has(p.kind) && p.books.some(b => activeBooks.has(b))),
+    [activeBooks, activeKinds]
   );
 
   const handleSelectPlace = useCallback((place: Place) => {
@@ -69,8 +83,47 @@ export default function Home() {
       place.books.forEach(b => next.add(b));
       return next;
     });
+    setActiveKinds(prev => (prev.has(place.kind) ? prev : new Set(prev).add(place.kind)));
+    setTour(null);
     setSelection(prev => ({ place, nonce: (prev?.nonce ?? 0) + 1 }));
   }, []);
+
+  // ── Recorridos guiados ──
+  const activeTour = tour ? TOURS.find(t => t.id === tour.id) ?? null : null;
+  const tourView = useMemo<TourView | null>(() => {
+    if (!tour || !activeTour) return null;
+    const step = activeTour.steps[tour.step];
+    return {
+      at: stepLatLng(step),
+      zoom: step.zoom ?? 7,
+      path: activeTour.steps.slice(0, tour.step + 1).map(stepLatLng),
+      key: `${tour.id}:${tour.step}`,
+    };
+  }, [tour, activeTour]);
+
+  const startTour = (id: string) => {
+    // Un recorrido necesita todos los lugares a la vista
+    setActiveBooks(new Set(ALL_BOOKS));
+    setActiveKinds(new Set(ALL_KINDS));
+    setTour({ id, step: 0 });
+    setTourMenu(false);
+  };
+  const stepCount = activeTour?.steps.length ?? 0;
+  const goStep = useCallback((delta: number) => {
+    setTour(t => t && { ...t, step: Math.min(Math.max(t.step + delta, 0), stepCount - 1) });
+  }, [stepCount]);
+
+  useEffect(() => {
+    if (!tour) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement)?.tagName === "INPUT") return;
+      if (e.key === "ArrowRight") goStep(1);
+      else if (e.key === "ArrowLeft") goStep(-1);
+      else if (e.key === "Escape") setTour(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [tour, goStep]);
 
   const searchResults = useMemo(() => {
     const q = normalize(search.trim());
@@ -114,6 +167,7 @@ export default function Home() {
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
       if (!searchBox.current?.contains(e.target as Node)) setSearchOpen(false);
+      if (!tourBox.current?.contains(e.target as Node)) setTourMenu(false);
     };
     document.addEventListener("pointerdown", onDown);
     return () => document.removeEventListener("pointerdown", onDown);
@@ -171,6 +225,28 @@ export default function Home() {
           )}
         </div>
 
+        <div className="tour-menu" ref={tourBox}>
+          <button
+            type="button"
+            className="header-btn header-btn--primary"
+            aria-haspopup="menu"
+            aria-expanded={tourMenu}
+            onClick={() => setTourMenu(v => !v)}
+          >
+            Recorridos ▾
+          </button>
+          {tourMenu && (
+            <div className="tour-menu-list" role="menu">
+              {TOURS.map(t => (
+                <button key={t.id} type="button" role="menuitem" onClick={() => startTour(t.id)}>
+                  <strong>{t.title}</strong>
+                  <span>{t.subtitle} · {t.steps.length} pasos</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="stat" aria-live="polite">
           <span>{visiblePlaces.length}</span> de <span>{PLACES.length}</span> lugares
         </div>
@@ -188,27 +264,41 @@ export default function Home() {
       <div className="app-content">
         <Sidebar
           activeBooks={activeBooks}
+          activeKinds={activeKinds}
           activeRoutes={activeRoutes}
           visiblePlaces={visiblePlaces}
           onToggleBook={handleToggleBook}
           onOnlyBook={handleOnlyBook}
           onSetAllBooks={handleSetAllBooks}
+          onToggleKind={handleToggleKind}
           onToggleRoute={handleToggleRoute}
           onSelectPlace={handleSelectPlace}
         />
 
         <HerodotusMap
           activeBooks={activeBooks}
+          visiblePlaces={visiblePlaces}
           activeRoutes={activeRoutes}
           selection={selection}
+          tourStep={tourView}
           fitNonce={fitNonce}
         />
 
-        <div className="hint">
-          {visiblePlaces.length === 0
-            ? "Ningún libro seleccionado · Activa alguno en el panel"
-            : "Haz clic en un marcador para leer lo que cuenta Heródoto"}
-        </div>
+        {activeTour && tour ? (
+          <TourPanel
+            tour={activeTour}
+            index={tour.step}
+            onPrev={() => goStep(-1)}
+            onNext={() => goStep(1)}
+            onExit={() => setTour(null)}
+          />
+        ) : (
+          <div className="hint">
+            {visiblePlaces.length === 0
+              ? "Ningún lugar con estos filtros · Actívalos en el panel"
+              : "Haz clic en un marcador o empieza un recorrido"}
+          </div>
+        )}
       </div>
     </div>
   );
