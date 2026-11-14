@@ -1,119 +1,137 @@
 "use client";
 
-import { useState } from "react";
-import { BOOKS, PLACES } from "@/data/places";
+import { useEffect, useMemo, useState } from "react";
+import { BOOKS, PLACES, type Place } from "@/data/places";
+import { ROUTES } from "@/data/routes";
 
 interface SidebarProps {
   activeBooks: Set<number>;
+  activeRoutes: Set<string>;
+  visiblePlaces: Place[];
   onToggleBook: (id: number) => void;
+  onOnlyBook: (id: number) => void;
+  onSetAllBooks: (on: boolean) => void;
+  onToggleRoute: (id: string) => void;
+  onSelectPlace: (place: Place) => void;
 }
 
-export default function Sidebar({ activeBooks, onToggleBook }: SidebarProps) {
+const BOOK_IDS = Object.keys(BOOKS).map(Number);
+const COUNT_PER_BOOK: Record<number, number> = Object.fromEntries(
+  BOOK_IDS.map(id => [id, PLACES.filter(p => p.books.includes(id)).length])
+);
+
+export default function Sidebar({
+  activeBooks, activeRoutes, visiblePlaces,
+  onToggleBook, onOnlyBook, onSetAllBooks, onToggleRoute, onSelectPlace,
+}: SidebarProps) {
   const [open, setOpen] = useState(true);
 
-  const countPerBook = (id: number) =>
-    PLACES.filter(p => p.books.includes(id)).length;
+  // En pantallas estrechas el panel empieza cerrado para no tapar el mapa
+  useEffect(() => {
+    if (window.innerWidth < 768) setOpen(false);
+  }, []);
+
+  const byRegion = useMemo(() => {
+    const groups = new Map<string, Place[]>();
+    visiblePlaces.forEach(p => {
+      if (!groups.has(p.region)) groups.set(p.region, []);
+      groups.get(p.region)!.push(p);
+    });
+    groups.forEach(list => list.sort((a, b) => a.name.localeCompare(b.name, "es")));
+    return Array.from(groups.entries());
+  }, [visiblePlaces]);
+
+  const selectPlace = (p: Place) => {
+    onSelectPlace(p);
+    if (window.innerWidth < 768) setOpen(false);
+  };
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        width: 220,
-        background: 'rgba(14,10,4,.95)',
-        borderRight: '1px solid #3d2b0f',
-        zIndex: 900,
-        display: 'flex',
-        flexDirection: 'column',
-        transform: open ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform .3s',
-      }}
-    >
-      {/* Title */}
-      <div style={{
-        fontFamily: "'Cinzel', serif",
-        fontSize: '.7rem',
-        letterSpacing: '.15em',
-        color: '#7a5a2a',
-        padding: '10px 12px 6px',
-        borderBottom: '1px solid #3d2b0f',
-        textTransform: 'uppercase',
-      }}>
-        Filtrar por Libro
-      </div>
+    <aside className={`sidebar${open ? "" : " sidebar--closed"}`} aria-label="Filtros y lugares">
+      <div className="sidebar-scroll" inert={open ? undefined : ("" as any)}>
+        <div className="sidebar-title">
+          <span>Filtrar por libro</span>
+          <span className="sidebar-actions">
+            <button type="button" onClick={() => onSetAllBooks(true)}>Todos</button>
+            <button type="button" onClick={() => onSetAllBooks(false)}>Ninguno</button>
+          </span>
+        </div>
 
-      {/* Book list */}
-      <div style={{ overflowY: 'auto', flex: 1 }}>
-        {Object.entries(BOOKS).map(([id, book]) => {
-          const numId = parseInt(id);
-          const active = activeBooks.has(numId);
+        {BOOK_IDS.map(id => {
+          const book = BOOKS[id];
+          const active = activeBooks.has(id);
           return (
-            <div
-              key={id}
-              onClick={() => onToggleBook(numId)}
-              style={{
-                padding: '7px 12px',
-                borderBottom: '1px solid #1e150a',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                transition: 'background .15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#1e150a')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <div style={{
-                width: 9, height: 9,
-                borderRadius: '50%',
-                flexShrink: 0,
-                background: book.color,
-                opacity: active ? 1 : 0.25,
-              }} />
-              <div style={{
-                fontFamily: "'Cinzel', serif",
-                fontSize: '.65rem',
-                letterSpacing: '.08em',
-                color: '#c9b08a',
-                flex: 1,
-                opacity: active ? 1 : 0.4,
-              }}>
-                {book.label}
-              </div>
-              <div style={{ fontSize: '.65rem', color: '#5a3e1b' }}>
-                {countPerBook(numId)}
-              </div>
+            <div key={id} className="sidebar-row">
+              <button
+                type="button"
+                className="sidebar-item"
+                aria-pressed={active}
+                onClick={() => onToggleBook(id)}
+              >
+                <span className="dot" style={{ background: book.color, opacity: active ? 1 : 0.25 }} />
+                <span className="sidebar-label" style={{ opacity: active ? 1 : 0.4 }}>{book.label}</span>
+                <span className="sidebar-count">{COUNT_PER_BOOK[id]}</span>
+              </button>
+              <button
+                type="button"
+                className="sidebar-only"
+                title={`Mostrar sólo el ${book.label}`}
+                aria-label={`Mostrar sólo el ${book.label}`}
+                onClick={() => onOnlyBook(id)}
+              >
+                sólo
+              </button>
             </div>
           );
         })}
+
+        <div className="sidebar-title"><span>Rutas</span></div>
+        {ROUTES.map(route => {
+          const active = activeRoutes.has(route.id);
+          return (
+            <div key={route.id} className="sidebar-row">
+              <button
+                type="button"
+                className="sidebar-item"
+                aria-pressed={active}
+                title={route.description}
+                onClick={() => onToggleRoute(route.id)}
+              >
+                <span className="dash" style={{ borderColor: route.color, opacity: active ? 1 : 0.25 }} />
+                <span className="sidebar-label" style={{ opacity: active ? 1 : 0.4 }}>{route.label}</span>
+              </button>
+            </div>
+          );
+        })}
+
+        <div className="sidebar-title">
+          <span>Lugares</span>
+          <span className="sidebar-count">{visiblePlaces.length}</span>
+        </div>
+        {byRegion.length === 0 && (
+          <div className="sidebar-empty">Ningún libro seleccionado.</div>
+        )}
+        {byRegion.map(([region, list]) => (
+          <div key={region}>
+            <div className="sidebar-region">{region}</div>
+            {list.map(p => (
+              <button key={p.name} type="button" className="sidebar-place" onClick={() => selectPlace(p)}>
+                <span className="dot dot--sm" style={{ background: BOOKS[p.books.find(b => activeBooks.has(b)) ?? p.books[0]].color }} />
+                {p.name}
+              </button>
+            ))}
+          </div>
+        ))}
       </div>
 
-      {/* Toggle button */}
       <button
+        type="button"
+        className="sidebar-toggle"
+        aria-expanded={open}
         onClick={() => setOpen(v => !v)}
-        style={{
-          position: 'absolute',
-          top: '50%',
-          right: -28,
-          transform: 'translateY(-50%)',
-          background: 'rgba(14,10,4,.95)',
-          border: '1px solid #3d2b0f',
-          borderLeft: 'none',
-          color: '#c9a227',
-          fontSize: '.75rem',
-          cursor: 'pointer',
-          padding: '8px 6px',
-          writingMode: 'vertical-rl',
-          letterSpacing: '.1em',
-          fontFamily: "'Cinzel', serif",
-          zIndex: 901,
-          whiteSpace: 'nowrap',
-        }}
       >
-        LIBROS {open ? '◀' : '▶'}
+        PANEL {open ? "◀" : "▶"}
       </button>
-    </div>
+    </aside>
   );
 }
