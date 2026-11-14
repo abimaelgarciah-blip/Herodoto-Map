@@ -5,6 +5,7 @@ import type * as Leaflet from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { PLACES, BOOKS, type Place } from "@/data/places";
 import { ROUTES } from "@/data/routes";
+import LAND from "@/data/land.json";
 
 export interface Selection {
   place: Place;
@@ -74,10 +75,34 @@ export default function HerodotusMap({ activeBooks, activeRoutes, selection, fit
       L.control.zoom({ position: "topright", zoomInTitle: "Acercar", zoomOutTitle: "Alejar" }).addTo(map);
       L.control.scale({ position: "bottomright", imperial: false }).addTo(map);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
+      // Tierra firme dibujada desde datos propios (Natural Earth): el mapa
+      // siempre tiene fondo aunque fallen o estén bloqueados los servidores de teselas.
+      map.createPane("land").style.zIndex = "150";
+      L.geoJSON(LAND as any, {
+        pane: "land",
+        interactive: false,
+        style: { color: "#8a6a3a", weight: 1, fillColor: "#3a2c18", fillOpacity: 1 },
       }).addTo(map);
+
+      const esri = "https://server.arcgisonline.com/ArcGIS/rest/services";
+      const esriAttr = 'Teselas &copy; <a href="https://www.esri.com/">Esri</a>';
+      const bases: Record<string, Leaflet.Layer> = {
+        "Pergamino": L.layerGroup(),
+        "Relieve": L.tileLayer(`${esri}/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}`, {
+          attribution: `${esriAttr} · Natural Earth`, maxNativeZoom: 13, className: "tiles-relief",
+        }),
+        "Imperio romano (DARE)": L.tileLayer("https://dh.gu.se/tiles/imperium/{z}/{x}/{y}.png", {
+          attribution: '<a href="https://dh.gu.se/dare/">DARE</a>, CC BY 4.0', maxNativeZoom: 11, className: "tiles-ancient",
+        }),
+        "Satélite": L.tileLayer(`${esri}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, {
+          attribution: `${esriAttr}, Maxar, Earthstar Geographics`, maxNativeZoom: 18, className: "tiles-photo",
+        }),
+        "Mapa actual (OSM)": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxNativeZoom: 19, className: "tiles-modern",
+        }),
+      };
+      bases["Relieve"].addTo(map);
+      L.control.layers(bases, undefined, { position: "topright", collapsed: true }).addTo(map);
 
       ROUTES.forEach(route => {
         const line = L.polyline(route.points, {
