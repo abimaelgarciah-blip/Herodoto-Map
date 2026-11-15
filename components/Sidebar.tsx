@@ -156,6 +156,10 @@ export default function Sidebar({
             ))}
           </div>
         ))}
+        <p className="sidebar-credit">
+          Citas de <em>Los nueve libros de la Historia</em>, traducción de Bartolomé Pou (s. XVIII).
+          Costas y ríos: Natural Earth.
+        </p>
       </div>
 
       <button

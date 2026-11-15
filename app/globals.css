@@ -321,3 +321,4 @@ button:focus-visible, input:focus-visible, .leaflet-interactive:focus-visible { 
 }
 .zoom-far .river-label { display: none; }
 .zoom-mid .river-label--minor { display: none; }
+.sidebar-credit { margin: 14px 12px 4px; padding-top: 8px; border-top: 1px solid #2a1e0a; font-size: .75rem; line-height: 1.35; color: #8a6a3a; }
