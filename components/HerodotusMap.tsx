@@ -6,6 +6,7 @@ import "leaflet/dist/leaflet.css";
 import { PLACES, BOOKS, KINDS, type Place } from "@/data/places";
 import { ROUTES } from "@/data/routes";
 import LAND from "@/data/land.json";
+import RIVERS from "@/data/rivers.json";
 
 export interface Selection {
   place: Place;
@@ -27,6 +28,7 @@ interface HerodotusMapProps {
   /** Lugares que pasan los filtros de libro y de tipo */
   visiblePlaces: Place[];
   activeRoutes: Set<string>;
+  showRivers: boolean;
   selection: Selection | null;
   /** Paso actual de un recorrido guiado */
   tourStep: TourView | null;
@@ -70,6 +72,9 @@ const BATTLE_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden=
   <path class="bm-swords" d="M8 8l8 8M16 8l-8 8M7 10.5l3.5-3.5M17 10.5 13.5 7"/>
 </svg>`;
 
+/** Ríos cuyo nombre se muestra ya en la vista general; el resto, al acercarse */
+const MAJOR_RIVERS = new Set(["Nilo", "Éufrates", "Tigris", "Istro", "Borístenes", "Tanais", "Halis", "Araxes", "Indo"]);
+
 /** Un marcador de lugar, sea círculo o icono de batalla */
 interface Handle {
   layer: Leaflet.Layer;
@@ -79,11 +84,12 @@ interface Handle {
 const BASE_STYLE = { radius: 7, color: "#0a0804", weight: 1.5, opacity: 1, fillOpacity: 0.9 };
 const SELECTED_STYLE = { radius: 10, color: "#f5e6b8", weight: 3 };
 
-export default function HerodotusMap({ activeBooks, visiblePlaces, activeRoutes, selection, tourStep, fitNonce }: HerodotusMapProps) {
+export default function HerodotusMap({ activeBooks, visiblePlaces, activeRoutes, showRivers, selection, tourStep, fitNonce }: HerodotusMapProps) {
   const mapRef  = useRef<HTMLDivElement>(null);
   const leaflet = useRef<typeof Leaflet | null>(null);
   const mapObj  = useRef<Leaflet.Map | null>(null);
   const markers = useRef<Map<string, Handle>>(new Map());
+  const riverLayer = useRef<Leaflet.LayerGroup | null>(null);
   const tourLayer = useRef<Leaflet.LayerGroup | null>(null);
   const routes  = useRef<Map<string, Leaflet.Polyline>>(new Map());
   const [ready, setReady] = useState(false);
@@ -137,6 +143,39 @@ export default function HerodotusMap({ activeBooks, visiblePlaces, activeRoutes,
       };
       bases["Relieve"].addTo(map);
       L.control.layers(bases, undefined, { position: "topright", collapsed: true }).addTo(map);
+
+      // Ríos con su nombre antiguo, por debajo de rutas y marcadores
+      map.createPane("rivers").style.zIndex = "350";
+      map.createPane("riverLabels").style.zIndex = "360";
+      const rivers = L.layerGroup();
+      (RIVERS as { name: string; modern: string; ref: string; label: number[]; lines: number[][][] }[]).forEach(r => {
+        const sameName = r.name === r.modern;
+        const line = L.polyline(r.lines as [number, number][][], { pane: "rivers", color: "#5d9cc4", weight: 1.6, opacity: 0.9 });
+        // Una línea invisible más ancha hace el río fácil de señalar
+        const hit = L.polyline(r.lines as [number, number][][], { pane: "rivers", color: "#000", weight: 12, opacity: 0 });
+        hit.bindTooltip(sameName ? `Río ${r.name}` : `Río ${r.name} (hoy ${r.modern})`, { sticky: true });
+        hit.bindPopup(
+          `<div class="popup-header"><div class="popup-name">Río ${esc(r.name)}</div>
+             <div class="popup-modern">${sameName ? "Conserva su nombre" : `Hoy ${esc(r.modern)}`}</div></div>
+           <div class="popup-body"><div class="popup-text">Heródoto lo menciona en ${esc(r.ref)}.</div></div>`,
+          { maxWidth: 280 }
+        );
+        const label = L.marker(r.label as [number, number], {
+          pane: "riverLabels",
+          interactive: false,
+          keyboard: false,
+          icon: L.divIcon({ className: MAJOR_RIVERS.has(r.name) ? "river-label" : "river-label river-label--minor", html: `<span>${esc(r.name)}</span>`, iconSize: [0, 0] }),
+        });
+        rivers.addLayer(line).addLayer(hit).addLayer(label);
+      });
+      riverLayer.current = rivers;
+      const syncZoom = () => {
+        const cl = map.getContainer().classList;
+        cl.toggle("zoom-far", map.getZoom() < 5);
+        cl.toggle("zoom-mid", map.getZoom() < 7);
+      };
+      map.on("zoomend", syncZoom);
+      syncZoom();
 
       ROUTES.forEach(route => {
         const line = L.polyline(route.points, {
@@ -199,6 +238,7 @@ export default function HerodotusMap({ activeBooks, visiblePlaces, activeRoutes,
       }
       markerStore.clear();
       tourLayer.current = null;
+      riverLayer.current = null;
       routeStore.clear();
     };
   }, []);
@@ -235,6 +275,15 @@ export default function HerodotusMap({ activeBooks, visiblePlaces, activeRoutes,
       }
     });
   }, [ready, activeRoutes]);
+
+  // Mostrar/ocultar ríos
+  useEffect(() => {
+    const map = mapObj.current;
+    const layer = riverLayer.current;
+    if (!ready || !map || !layer) return;
+    if (showRivers) layer.addTo(map);
+    else layer.remove();
+  }, [ready, showRivers]);
 
   // Volar al lugar seleccionado y abrir su ficha al llegar
   useEffect(() => {

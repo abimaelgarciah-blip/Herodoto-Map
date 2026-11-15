@@ -39,6 +39,7 @@ export default function Home() {
   const [tourMenu, setTourMenu]         = useState(false);
   const tourBox = useRef<HTMLDivElement>(null);
   const [activeRoutes, setActiveRoutes] = useState<Set<string>>(() => new Set());
+  const [showRivers, setShowRivers]     = useState(true);
   const [selection, setSelection]       = useState<Selection | null>(null);
   const [fitNonce, setFitNonce]         = useState(0);
   const [search, setSearch]             = useState("");
@@ -266,6 +267,8 @@ export default function Home() {
           activeBooks={activeBooks}
           activeKinds={activeKinds}
           activeRoutes={activeRoutes}
+          showRivers={showRivers}
+          onToggleRivers={() => setShowRivers(v => !v)}
           visiblePlaces={visiblePlaces}
           onToggleBook={handleToggleBook}
           onOnlyBook={handleOnlyBook}
@@ -279,6 +282,7 @@ export default function Home() {
           activeBooks={activeBooks}
           visiblePlaces={visiblePlaces}
           activeRoutes={activeRoutes}
+          showRivers={showRivers}
           selection={selection}
           tourStep={tourView}
           fitNonce={fitNonce}

@@ -310,3 +310,14 @@ button:focus-visible, input:focus-visible, .leaflet-interactive:focus-visible { 
 @media (prefers-reduced-motion: reduce) {
   .tour-ring span { animation: none; transform: scale(.8); }
 }
+
+/* ── Ríos ── */
+.dash--solid { border-top-style: solid; }
+.river-label { background: none; border: none; }
+.river-label span {
+  position: absolute; transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none;
+  font-family: 'Crimson Text', serif; font-style: italic; font-size: .82rem; letter-spacing: .12em; color: #a9d2ee;
+  text-shadow: 0 0 3px #0a0804, 0 0 3px #0a0804, 0 0 6px #0a0804;
+}
+.zoom-far .river-label { display: none; }
+.zoom-mid .river-label--minor { display: none; }

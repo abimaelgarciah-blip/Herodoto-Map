@@ -8,6 +8,8 @@ interface SidebarProps {
   activeBooks: Set<number>;
   activeKinds: Set<PlaceKind>;
   activeRoutes: Set<string>;
+  showRivers: boolean;
+  onToggleRivers: () => void;
   visiblePlaces: Place[];
   onToggleBook: (id: number) => void;
   onOnlyBook: (id: number) => void;
@@ -28,7 +30,7 @@ const COUNT_PER_KIND = Object.fromEntries(
 ) as Record<PlaceKind, number>;
 
 export default function Sidebar({
-  activeBooks, activeKinds, activeRoutes, visiblePlaces,
+  activeBooks, activeKinds, activeRoutes, showRivers, onToggleRivers, visiblePlaces,
   onToggleBook, onOnlyBook, onSetAllBooks, onToggleKind, onToggleRoute, onSelectPlace,
 }: SidebarProps) {
   const [open, setOpen] = useState(true);
@@ -111,7 +113,13 @@ export default function Sidebar({
           );
         })}
 
-        <div className="sidebar-title"><span>Rutas</span></div>
+        <div className="sidebar-title"><span>Ríos y rutas</span></div>
+        <div className="sidebar-row">
+          <button type="button" className="sidebar-item" aria-pressed={showRivers} onClick={onToggleRivers}>
+            <span className="dash dash--solid" style={{ borderColor: "#5d9cc4", opacity: showRivers ? 1 : 0.25 }} />
+            <span className="sidebar-label" style={{ opacity: showRivers ? 1 : 0.4 }}>Ríos · nombres antiguos</span>
+          </button>
+        </div>
         {ROUTES.map(route => {
           const active = activeRoutes.has(route.id);
           return (
