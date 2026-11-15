@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BOOKS, KINDS, PLACES, type Place, type PlaceKind } from "@/data/places";
 import { ROUTES } from "@/data/routes";
+import { useLang, bookLabel, kindView, placeName, regionName, routeView } from "@/lib/i18n";
 
 interface SidebarProps {
   activeBooks: Set<number>;
@@ -33,6 +34,7 @@ export default function Sidebar({
   activeBooks, activeKinds, activeRoutes, showRivers, onToggleRivers, visiblePlaces,
   onToggleBook, onOnlyBook, onSetAllBooks, onToggleKind, onToggleRoute, onSelectPlace,
 }: SidebarProps) {
+  const { lang, t } = useLang();
   const [open, setOpen] = useState(true);
 
   // En pantallas estrechas el panel empieza cerrado para no tapar el mapa
@@ -46,9 +48,9 @@ export default function Sidebar({
       if (!groups.has(p.region)) groups.set(p.region, []);
       groups.get(p.region)!.push(p);
     });
-    groups.forEach(list => list.sort((a, b) => a.name.localeCompare(b.name, "es")));
+    groups.forEach(list => list.sort((a, b) => placeName(a, lang).localeCompare(placeName(b, lang), lang)));
     return Array.from(groups.entries());
-  }, [visiblePlaces]);
+  }, [visiblePlaces, lang]);
 
   const selectPlace = (p: Place) => {
     onSelectPlace(p);
@@ -56,119 +58,103 @@ export default function Sidebar({
   };
 
   return (
-    <aside className={`sidebar${open ? "" : " sidebar--closed"}`} aria-label="Filtros y lugares">
+    <aside className={`sidebar${open ? "" : " sidebar--closed"}`} aria-label={t("panelLabel")}>
       <div className="sidebar-scroll" inert={open ? undefined : ("" as any)}>
         <div className="sidebar-title">
-          <span>Filtrar por libro</span>
+          <span>{t("filterByBook")}</span>
           <span className="sidebar-actions">
-            <button type="button" onClick={() => onSetAllBooks(true)}>Todos</button>
-            <button type="button" onClick={() => onSetAllBooks(false)}>Ninguno</button>
+            <button type="button" onClick={() => onSetAllBooks(true)}>{t("all")}</button>
+            <button type="button" onClick={() => onSetAllBooks(false)}>{t("none")}</button>
           </span>
         </div>
 
         {BOOK_IDS.map(id => {
-          const book = BOOKS[id];
           const active = activeBooks.has(id);
+          const label = bookLabel(id, lang);
           return (
             <div key={id} className="sidebar-row">
-              <button
-                type="button"
-                className="sidebar-item"
-                aria-pressed={active}
-                onClick={() => onToggleBook(id)}
-              >
-                <span className="dot" style={{ background: book.color, opacity: active ? 1 : 0.25 }} />
-                <span className="sidebar-label" style={{ opacity: active ? 1 : 0.4 }}>{book.label}</span>
+              <button type="button" className={`sidebar-item${active ? "" : " is-off"}`} aria-pressed={active} onClick={() => onToggleBook(id)}>
+                <span className="dot" style={{ background: BOOKS[id].color }} />
+                <span className="sidebar-label">{label}</span>
                 <span className="sidebar-count">{COUNT_PER_BOOK[id]}</span>
               </button>
               <button
                 type="button"
                 className="sidebar-only"
-                title={`Mostrar sólo el ${book.label}`}
-                aria-label={`Mostrar sólo el ${book.label}`}
+                title={`${t("showOnly")} ${label}`}
+                aria-label={`${t("showOnly")} ${label}`}
                 onClick={() => onOnlyBook(id)}
               >
-                sólo
+                {t("only")}
               </button>
             </div>
           );
         })}
 
-        <div className="sidebar-title"><span>Tipo de lugar</span></div>
+        <div className="sidebar-title"><span>{t("placeType")}</span></div>
         {KIND_IDS.map(kind => {
           const active = activeKinds.has(kind);
           return (
             <div key={kind} className="sidebar-row">
-              <button
-                type="button"
-                className="sidebar-item"
-                aria-pressed={active}
-                onClick={() => onToggleKind(kind)}
-              >
-                <span className={`kind-mark kind-mark--${kind}`} style={{ opacity: active ? 1 : 0.25 }} />
-                <span className="sidebar-label" style={{ opacity: active ? 1 : 0.4 }}>{KINDS[kind].plural}</span>
+              <button type="button" className={`sidebar-item${active ? "" : " is-off"}`} aria-pressed={active} onClick={() => onToggleKind(kind)}>
+                <span className={`kind-mark kind-mark--${kind}`} />
+                <span className="sidebar-label">{kindView(kind, lang).plural}</span>
                 <span className="sidebar-count">{COUNT_PER_KIND[kind]}</span>
               </button>
             </div>
           );
         })}
 
-        <div className="sidebar-title"><span>Ríos y rutas</span></div>
+        <div className="sidebar-title"><span>{t("riversRoutes")}</span></div>
         <div className="sidebar-row">
-          <button type="button" className="sidebar-item" aria-pressed={showRivers} onClick={onToggleRivers}>
-            <span className="dash dash--solid" style={{ borderColor: "#5d9cc4", opacity: showRivers ? 1 : 0.25 }} />
-            <span className="sidebar-label" style={{ opacity: showRivers ? 1 : 0.4 }}>Ríos · nombres antiguos</span>
+          <button type="button" className={`sidebar-item${showRivers ? "" : " is-off"}`} aria-pressed={showRivers} onClick={onToggleRivers}>
+            <span className="dash dash--solid" style={{ borderColor: "#5d9cc4" }} />
+            <span className="sidebar-label">{t("rivers")}</span>
           </button>
         </div>
         {ROUTES.map(route => {
           const active = activeRoutes.has(route.id);
+          const v = routeView(route, lang);
           return (
             <div key={route.id} className="sidebar-row">
               <button
                 type="button"
-                className="sidebar-item"
+                className={`sidebar-item${active ? "" : " is-off"}`}
                 aria-pressed={active}
-                title={route.description}
+                title={v.description}
                 onClick={() => onToggleRoute(route.id)}
               >
-                <span className="dash" style={{ borderColor: route.color, opacity: active ? 1 : 0.25 }} />
-                <span className="sidebar-label" style={{ opacity: active ? 1 : 0.4 }}>{route.label}</span>
+                <span className="dash" style={{ borderColor: route.color }} />
+                <span className="sidebar-label">{v.label}</span>
               </button>
             </div>
           );
         })}
 
         <div className="sidebar-title">
-          <span>Lugares</span>
+          <span>{t("placesTitle")}</span>
           <span className="sidebar-count">{visiblePlaces.length}</span>
         </div>
-        {byRegion.length === 0 && (
-          <div className="sidebar-empty">Ningún lugar con estos filtros.</div>
-        )}
+        {byRegion.length === 0 && <div className="sidebar-empty">{t("noPlaces")}</div>}
         {byRegion.map(([region, list]) => (
           <div key={region}>
-            <div className="sidebar-region">{region}</div>
+            <div className="sidebar-region">{regionName(region, lang)}</div>
             {list.map(p => (
               <button key={p.name} type="button" className="sidebar-place" onClick={() => selectPlace(p)}>
-                <span className={p.kind === "batalla" ? "dot dot--sm dot--battle" : "dot dot--sm"} style={{ background: BOOKS[p.books.find(b => activeBooks.has(b)) ?? p.books[0]].color }} />
-                {p.name}
+                <span
+                  className={p.kind === "batalla" ? "dot dot--sm dot--battle" : "dot dot--sm"}
+                  style={{ background: BOOKS[p.books.find(b => activeBooks.has(b)) ?? p.books[0]].color }}
+                />
+                {placeName(p, lang)}
               </button>
             ))}
           </div>
         ))}
-        <p className="sidebar-credit">
-          Citas de <em>Los nueve libros de la Historia</em>, traducción de Bartolomé Pou (s. XVIII).
-          Costas y ríos: Natural Earth.
-        </p>
+        <p className="sidebar-credit">{t("credit")}</p>
       </div>
 
-      <button
-        type="button"
-        className="sidebar-toggle"
-        aria-expanded={open}
-        onClick={() => setOpen(v => !v)}
-      >
-        PANEL {open ? "◀" : "▶"}
+      <button type="button" className="sidebar-toggle" aria-expanded={open} onClick={() => setOpen(v => !v)}>
+        {t("panel")} {open ? "◀" : "▶"}
       </button>
     </aside>
   );

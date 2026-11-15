@@ -1,6 +1,7 @@
 "use client";
 
 import type { Tour } from "@/data/tours";
+import { useLang, tourView } from "@/lib/i18n";
 
 interface TourPanelProps {
   tour: Tour;
@@ -11,29 +12,31 @@ interface TourPanelProps {
 }
 
 export default function TourPanel({ tour, index, onPrev, onNext, onExit }: TourPanelProps) {
-  const step = tour.steps[index];
-  const last = index === tour.steps.length - 1;
+  const { lang, t } = useLang();
+  const view = tourView(tour, lang);
+  const step = view.steps[index];
+  const last = index === view.steps.length - 1;
 
   return (
-    <section className="tour-panel" aria-label={`Recorrido: ${tour.title}`}>
+    <section className="tour-panel" aria-label={`${t("tour")}: ${view.title}`}>
       <div className="tour-head">
-        <span className="tour-name">{tour.title}</span>
-        <span className="tour-progress">{index + 1} / {tour.steps.length}</span>
-        <button type="button" className="tour-exit" onClick={onExit} aria-label="Salir del recorrido" title="Salir (Esc)">×</button>
+        <span className="tour-name">{view.title}</span>
+        <span className="tour-progress">{index + 1} / {view.steps.length}</span>
+        <button type="button" className="tour-exit" onClick={onExit} aria-label={t("exitTour")} title={`${t("exitTour")} (Esc)`}>×</button>
       </div>
       <div className="tour-bar" aria-hidden="true">
-        <span style={{ width: `${((index + 1) / tour.steps.length) * 100}%` }} />
+        <span style={{ width: `${((index + 1) / view.steps.length) * 100}%` }} />
       </div>
       <div className="tour-body" aria-live="polite">
         <h2>{step.title}</h2>
         <p>{step.text}</p>
-        <div className="tour-ref">Heródoto, {step.ref}</div>
+        <div className="tour-ref">{t("herodotus")}, {step.ref}</div>
       </div>
       <div className="tour-nav">
-        <button type="button" onClick={onPrev} disabled={index === 0}>◀ Anterior</button>
+        <button type="button" onClick={onPrev} disabled={index === 0}>{t("prev")}</button>
         {last
-          ? <button type="button" className="is-primary" onClick={onExit}>Terminar</button>
-          : <button type="button" className="is-primary" onClick={onNext}>Siguiente ▶</button>}
+          ? <button type="button" className="is-primary" onClick={onExit}>{t("finish")}</button>
+          : <button type="button" className="is-primary" onClick={onNext}>{t("next")}</button>}
       </div>
     </section>
   );
